@@ -16,3 +16,17 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+button, input { font: inherit; }
+button { border: 0; border-radius: .55rem; padding: .8rem 1rem; background: #24462c; color: white; cursor: pointer; font-weight: 700; }
+button:disabled { opacity: .55; cursor: wait; }
+.auth-page, .dashboard { min-height: 100vh; display: grid; place-items: center; padding: 1.25rem; }
+.auth-card, .dashboard section { width: min(100%, 28rem); background: white; border: 1px solid #d9ddd5; border-radius: 1rem; padding: clamp(1.5rem, 5vw, 2.5rem); }
+.dashboard section { width: min(100%, 42rem); }
+.eyebrow { color: #526e57; font-size: .75rem; font-weight: 800; letter-spacing: .14em; }
+h1 { line-height: 1.1; margin: .5rem 0 1rem; }
+.auth-form { display: grid; gap: 1rem; margin-top: 1.5rem; }
+.auth-form label { display: grid; gap: .4rem; font-weight: 700; }
+.auth-form input { width: 100%; border: 1px solid #9da79e; border-radius: .5rem; padding: .75rem; }
+.auth-form a { color: #24462c; text-align: center; }
+.error { color: #9c2424; }.success { color: #256333; }

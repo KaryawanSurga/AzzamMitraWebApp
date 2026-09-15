@@ -1,6 +1,6 @@
 # Azzam Mitra Webapp
 
-Baseline aplikasi operasional internal Azzam Mitra. Repository ini menyediakan fondasi teknis MVP; autentikasi, dashboard, dan fitur bisnis belum diimplementasikan.
+Fondasi Fase 1 aplikasi operasional internal Azzam Mitra: model data relasional, migration awal, autentikasi owner, dan shell dashboard terproteksi.
 
 ## Prasyarat
 
@@ -17,6 +17,15 @@ npm run dev
 ```
 
 Buka `http://localhost:3000`. Shell awal dan production build tidak mengakses database atau membutuhkan secret production. Ganti nilai contoh di `.env.local` sebelum memakai Supabase atau database.
+
+## Setup Supabase Auth
+
+1. Buat project Supabase dan aktifkan provider Email/Password.
+2. Isi URL project dan anon/publishable key pada `.env.local`. Anon key boleh berada di browser; jangan pernah menambahkan service-role key dengan prefix `NEXT_PUBLIC_`.
+3. Di **Authentication → URL Configuration**, set Site URL lokal ke `http://localhost:3000` dan tambahkan `http://localhost:3000/auth/callback` ke Redirect URLs.
+4. Buat satu user owner dari dashboard Supabase atau invitation resmi. Setelah migration diterapkan, buat profil `public.users` dengan `id` yang sama dengan identity `auth.users`.
+
+Callback menukar kode PKCE menjadi sesi dan hanya meneruskan redirect internal. Route `/dashboard` diverifikasi ulang di Server Component; proxy memperbarui cookie sesi dan melakukan redirect awal.
 
 ## Environment
 
@@ -52,7 +61,9 @@ npm run db:studio    # buka Drizzle Studio (memerlukan DATABASE_URL)
 - `src/test` — setup test bersama.
 - `docs` — PRD, workflow, spesifikasi teknis, dan UAT sebagai source of truth.
 
-Schema bisnis dan migration sengaja belum dibuat. Sesuai ADR-002, browser tidak akan menulis tabel finansial secara langsung; aturan bisnis dan otorisasi berada di backend Next.js.
+`npm run db:generate` hanya membandingkan file schema dengan snapshot Drizzle dan tidak membuka koneksi database. Periksa SQL di `drizzle/` sebelum menjalankan `npm run db:migrate` pada database yang dituju. Migration tidak dijalankan otomatis dan repository tidak memuat secret.
+
+Fase 1 belum menyediakan CRUD atau mutation data bisnis. Sesuai ADR-002, browser tidak menulis tabel finansial secara langsung; service dan aturan bisnis server-side baru dibangun pada fase berikutnya. Provisioning Supabase, akun production, RLS/policy deployment, rate limiting, monitoring, dan deployment juga berada di luar fase ini.
 
 ## Dokumentasi produk
 
@@ -61,3 +72,4 @@ Schema bisnis dan migration sengaja belum dibuat. Sesuai ADR-002, browser tidak 
 - [Sitemap dan workflows](./docs/02-SITEMAP-WORKFLOWS.md)
 - [Technical specification](./docs/03-TECHNICAL-SPEC.md)
 - [UAT](./docs/04-UAT.md)
+- [Roadmap implementasi](./docs/05-IMPLEMENTATION-ROADMAP.md)
