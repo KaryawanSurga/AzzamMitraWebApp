@@ -1,0 +1,27 @@
+# dependencies
+/node_modules/
+
+# Next.js
+/.next/
+/out/
+
+# tests
+/coverage/
+
+# environment files (the documented example is committed)
+.env*
+!.env.example
+
+# deployment and monitoring
+.vercel/
+.sentryclirc
+
+# OS and editor artifacts
+.DS_Store
+Thumbs.db
+*.swp
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
