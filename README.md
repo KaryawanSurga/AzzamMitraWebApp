@@ -4,7 +4,7 @@ Baseline aplikasi operasional internal Azzam Mitra. Repository ini menyediakan f
 
 ## Prasyarat
 
-- Node.js 20.9 atau lebih baru (CI memakai Node.js 22)
+- Node.js 22.14 atau lebih baru (CI memakai versi minimum 22.14)
 - npm 10 atau lebih baru
 - PostgreSQL/Supabase hanya diperlukan saat menjalankan code path database
 
