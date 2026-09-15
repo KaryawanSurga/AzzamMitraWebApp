@@ -10,6 +10,7 @@ describe("authRedirectFor", () => {
   it("mengarahkan dashboard anonim ke login", () => expect(authRedirectFor("/dashboard", false)).toBe("/login?next=%2Fdashboard"));
   it("mengarahkan user aktif dari login", () => expect(authRedirectFor("/login", true)).toBe("/dashboard"));
   it("tidak mengubah request valid", () => expect(authRedirectFor("/dashboard", true)).toBeNull());
+  it("menolak identity terautentikasi yang bukan owner terprovisi", () => expect(authRedirectFor("/dashboard", false)).toBe("/login?next=%2Fdashboard"));
   it("melindungi route internal berikutnya secara default", () => expect(authRedirectFor("/penjualan", false)).toBe("/login?next=%2Fpenjualan"));
   it("membiarkan callback dan forgot-password tetap publik", () => { expect(authRedirectFor("/auth/callback", false)).toBeNull(); expect(authRedirectFor("/forgot-password", false)).toBeNull(); });
 });

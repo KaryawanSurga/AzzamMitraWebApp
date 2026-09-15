@@ -21,9 +21,9 @@ Buka `http://localhost:3000`. Shell awal dan production build tidak mengakses da
 ## Setup Supabase Auth
 
 1. Buat project Supabase dan aktifkan provider Email/Password.
-2. Isi URL project dan anon/publishable key pada `.env.local`. Anon key boleh berada di browser; jangan pernah menambahkan service-role key dengan prefix `NEXT_PUBLIC_`.
+2. Isi URL project, anon/publishable key, dan `SUPABASE_SERVICE_ROLE_KEY` pada `.env.local`. Service-role key hanya dipakai server untuk memastikan identity memiliki profil owner; jangan pernah memberinya prefix `NEXT_PUBLIC_` atau mengimpornya ke Client Component.
 3. Di **Authentication → URL Configuration**, set Site URL lokal ke `http://localhost:3000` dan tambahkan `http://localhost:3000/auth/callback` ke Redirect URLs.
-4. Buat satu user owner dari dashboard Supabase atau invitation resmi. Setelah migration diterapkan, buat profil `public.users` dengan `id` yang sama dengan identity `auth.users`.
+4. Terapkan seluruh migration F1, lalu buat satu user owner dari dashboard Supabase atau invitation resmi. Provision profil `public.users` melalui SQL Editor/server tepercaya dengan `id` yang sama dengan identity `auth.users`. Identity tanpa profil ini ditolak dari area internal.
 
 Callback menukar kode PKCE menjadi sesi dan hanya meneruskan redirect internal. Route `/dashboard` diverifikasi ulang di Server Component; proxy memperbarui cookie sesi dan melakukan redirect awal.
 
@@ -33,6 +33,7 @@ Callback menukar kode PKCE menjadi sesi dan hanya meneruskan redirect internal. 
 | --- | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Browser + server | URL project Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Browser + server | Anon/publishable key Supabase |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server saja | Lookup profil owner yang melewati RLS; wajib dirahasiakan |
 | `DATABASE_URL` | Server saja | Koneksi PostgreSQL untuk Drizzle |
 
 Semua environment divalidasi saat code path terkait dipanggil. Jangan memakai prefix `NEXT_PUBLIC_` untuk secret. `.env.example` hanya berisi placeholder dan aman disalin; jangan commit `.env.local`.
@@ -61,9 +62,9 @@ npm run db:studio    # buka Drizzle Studio (memerlukan DATABASE_URL)
 - `src/test` — setup test bersama.
 - `docs` — PRD, workflow, spesifikasi teknis, dan UAT sebagai source of truth.
 
-`npm run db:generate` hanya membandingkan file schema dengan snapshot Drizzle dan tidak membuka koneksi database. Periksa SQL di `drizzle/` sebelum menjalankan `npm run db:migrate` pada database yang dituju. Migration tidak dijalankan otomatis dan repository tidak memuat secret.
+`npm run db:generate` hanya membandingkan file schema dengan snapshot Drizzle dan tidak membuka koneksi database. Periksa SQL di `drizzle/` sebelum menjalankan `npm run db:migrate` pada database yang dituju. Baseline migration F1 mengaktifkan RLS pada seluruh 11 tabel aplikasi tanpa policy client, sehingga role `anon`/`authenticated` ditolak secara default. Backend tepercaya tetap dapat bekerja melalui koneksi PostgreSQL atau service role. Migration tidak dijalankan otomatis dan repository tidak memuat secret.
 
-Fase 1 belum menyediakan CRUD atau mutation data bisnis. Sesuai ADR-002, browser tidak menulis tabel finansial secara langsung; service dan aturan bisnis server-side baru dibangun pada fase berikutnya. Provisioning Supabase, akun production, RLS/policy deployment, rate limiting, monitoring, dan deployment juga berada di luar fase ini.
+Fase 1 belum menyediakan CRUD atau mutation data bisnis. Sesuai ADR-002, browser tidak menulis tabel finansial secara langsung; RLS deny-by-default sudah menjadi bagian baseline aman F1, sedangkan service dan aturan bisnis server-side baru dibangun pada fase berikutnya. Provisioning Supabase, akun production, policy akses client tambahan, rate limiting, monitoring, dan deployment berada di luar fase ini.
 
 ## Dokumentasi produk
 

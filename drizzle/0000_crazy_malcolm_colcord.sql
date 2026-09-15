@@ -199,3 +199,25 @@ CREATE INDEX "sales_customer_idx" ON "sales" USING btree ("customer_id");--> sta
 CREATE INDEX "sales_transaction_date_idx" ON "sales" USING btree ("transaction_date");--> statement-breakpoint
 CREATE INDEX "sales_status_idx" ON "sales" USING btree ("status","payment_status");--> statement-breakpoint
 CREATE UNIQUE INDEX "users_email_unique" ON "users" USING btree ("email");
+--> statement-breakpoint
+ALTER TABLE "adjustments" ENABLE ROW LEVEL SECURITY;
+--> statement-breakpoint
+ALTER TABLE "audit_events" ENABLE ROW LEVEL SECURITY;
+--> statement-breakpoint
+ALTER TABLE "capital_movements" ENABLE ROW LEVEL SECURITY;
+--> statement-breakpoint
+ALTER TABLE "crate_movements" ENABLE ROW LEVEL SECURITY;
+--> statement-breakpoint
+ALTER TABLE "customers" ENABLE ROW LEVEL SECURITY;
+--> statement-breakpoint
+ALTER TABLE "deliveries" ENABLE ROW LEVEL SECURITY;
+--> statement-breakpoint
+ALTER TABLE "expenses" ENABLE ROW LEVEL SECURITY;
+--> statement-breakpoint
+ALTER TABLE "payments" ENABLE ROW LEVEL SECURITY;
+--> statement-breakpoint
+ALTER TABLE "sale_items" ENABLE ROW LEVEL SECURITY;
+--> statement-breakpoint
+ALTER TABLE "sales" ENABLE ROW LEVEL SECURITY;
+--> statement-breakpoint
+ALTER TABLE "users" ENABLE ROW LEVEL SECURITY;
