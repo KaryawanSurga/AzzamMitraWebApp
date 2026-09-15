@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   bigint,
+  boolean,
   check,
   date,
   index,
@@ -45,11 +46,13 @@ export const customers = pgTable("customers", {
   customerNumber: text("customer_number").notNull(),
   name: text("name").notNull(),
   whatsapp: text("whatsapp"), address: text("address"), notes: text("notes"),
+  isActive: boolean("is_active").default(true).notNull(),
   ...timestamps,
 }, (t) => [uniqueIndex("customers_number_unique").on(t.customerNumber), index("customers_name_idx").on(t.name), check("customers_name_not_blank", sql`length(trim(${t.name})) > 0`)]).enableRLS();
 
 export const sales = pgTable("sales", {
   id: uuid("id").defaultRandom().primaryKey(), invoiceNumber: text("invoice_number").notNull(),
+  idempotencyKey: text("idempotency_key").notNull(),
   customerId: uuid("customer_id").notNull().references(() => customers.id, { onDelete: "restrict" }),
   status: saleStatus("status").default("draft").notNull(), paymentStatus: paymentStatus("payment_status").default("unpaid").notNull(),
   transactionDate: timestamp("transaction_date", { withTimezone: true }).notNull(), dueDate: date("due_date"),
@@ -57,7 +60,7 @@ export const sales = pgTable("sales", {
   feeRupiah: bigint("fee_rupiah", { mode: "number" }).default(0).notNull(), totalRupiah: bigint("total_rupiah", { mode: "number" }).default(0).notNull(),
   notes: text("notes"), confirmedAt: timestamp("confirmed_at", { withTimezone: true }), cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
   ...timestamps,
-}, (t) => [uniqueIndex("sales_invoice_number_unique").on(t.invoiceNumber), index("sales_customer_idx").on(t.customerId), index("sales_transaction_date_idx").on(t.transactionDate), index("sales_status_idx").on(t.status, t.paymentStatus), check("sales_amounts_nonnegative", sql`${t.subtotalRupiah} >= 0 and ${t.discountRupiah} >= 0 and ${t.feeRupiah} >= 0 and ${t.totalRupiah} >= 0`), check("sales_total_formula", sql`${t.totalRupiah} = ${t.subtotalRupiah} - ${t.discountRupiah} + ${t.feeRupiah}`)]).enableRLS();
+}, (t) => [uniqueIndex("sales_invoice_number_unique").on(t.invoiceNumber), uniqueIndex("sales_idempotency_unique").on(t.idempotencyKey), index("sales_customer_idx").on(t.customerId), index("sales_transaction_date_idx").on(t.transactionDate), index("sales_status_idx").on(t.status, t.paymentStatus), check("sales_amounts_nonnegative", sql`${t.subtotalRupiah} >= 0 and ${t.discountRupiah} >= 0 and ${t.feeRupiah} >= 0 and ${t.totalRupiah} >= 0`), check("sales_total_formula", sql`${t.totalRupiah} = ${t.subtotalRupiah} - ${t.discountRupiah} + ${t.feeRupiah}`)]).enableRLS();
 
 export const saleItems = pgTable("sale_items", {
   id: uuid("id").defaultRandom().primaryKey(), saleId: uuid("sale_id").notNull().references(() => sales.id, { onDelete: "restrict" }),
