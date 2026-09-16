@@ -2,6 +2,13 @@ import Link from "next/link";
 import { logout } from "@/app/auth/actions";
 import { BrandMark } from "@/components/brand-mark";
 
+const navigation = [
+  ["/dashboard", "Dashboard"],
+  ["/penjualan", "Penjualan"],
+  ["/pelanggan", "Pelanggan"],
+  ["/peti", "Peti"],
+] as const;
+
 export function InternalShell({ children, ownerName }: { children: React.ReactNode; ownerName: string }) {
   return (
     <div className="app-shell">
@@ -14,9 +21,7 @@ export function InternalShell({ children, ownerName }: { children: React.ReactNo
           </span>
         </Link>
         <nav aria-label="Navigasi utama">
-          <Link href="/dashboard">Dashboard</Link>
-          <Link href="/penjualan">Penjualan</Link>
-          <Link href="/pelanggan">Pelanggan</Link>
+          {navigation.map(([href, label]) => <Link href={href} key={href}>{label}</Link>)}
         </nav>
         <div className="sidebar-user">
           <span>{ownerName}</span>
@@ -27,9 +32,7 @@ export function InternalShell({ children, ownerName }: { children: React.ReactNo
       </aside>
       <div className="app-content">{children}</div>
       <nav className="bottom-nav" aria-label="Navigasi mobile">
-        <Link href="/dashboard">Dashboard</Link>
-        <Link href="/penjualan">Penjualan</Link>
-        <Link href="/pelanggan">Pelanggan</Link>
+        {navigation.map(([href, label]) => <Link href={href} key={href}>{label}</Link>)}
       </nav>
     </div>
   );

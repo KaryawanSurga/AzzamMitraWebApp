@@ -1,0 +1,3 @@
+export default function Loading() {
+  return <main className="page skeleton-page" aria-busy="true" aria-label="Memuat peti"><div className="skeleton heading"/><div className="skeleton search-bar"/>{[1, 2, 3].map((item) => <div className="skeleton row" key={item}/>)}</main>;
+}

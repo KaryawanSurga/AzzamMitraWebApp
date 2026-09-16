@@ -1,16 +1,11 @@
 import "server-only";
 import { customerArchiveSchema, customerCreateSchema, customerIdSchema, customerListSchema, customerUpdateSchema, saleIdSchema, saleListSchema, saleMutationSchema, calculateSale, jakartaDate, validateTransactionDate } from "@/domain/sales";
 import type { OwnerProfile } from "@/lib/auth/owner";
-import type { AppResult } from "@/server/result";
-import { unauthorizedResult } from "@/server/result";
+import { repositoryFailure, unauthorizedResult, validationFailure, type AppResult } from "@/server/result";
 import { RepositoryConflictError, type CustomerRecord, type F2Repository, type SaleRecord } from "./repository";
-import type { z } from "zod";
 
-function validation(error: z.ZodError): AppResult<never> { return { ok: false, error: { code: "validation", message: "Periksa kembali data yang diisi.", fields: error.flatten().fieldErrors } }; }
-function failure(error: unknown): AppResult<never> {
-  if (error instanceof RepositoryConflictError) return { ok: false, error: { code: "conflict", message: "Data dengan nomor atau kunci yang sama sudah tersimpan." } };
-  return { ok: false, error: { code: "retryable", message: "Data belum dapat disimpan. Silakan coba lagi." } };
-}
+const validation = validationFailure;
+const failure = repositoryFailure;
 
 export class F2Service {
   constructor(private readonly repository: F2Repository, private readonly now: () => Date = () => new Date()) {}

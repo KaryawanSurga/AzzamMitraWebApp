@@ -19,5 +19,4 @@ export interface F2Repository {
   getSale(id: string, today: string): Promise<SaleDetail | null>;
 }
 
-export class RepositoryConflictError extends Error {}
-export class RepositoryUnavailableError extends Error { constructor(cause?: unknown) { super("Repository unavailable", { cause }); } }
+export { RepositoryConflictError, RepositoryUnavailableError } from "@/server/errors";

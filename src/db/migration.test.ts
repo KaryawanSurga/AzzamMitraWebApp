@@ -30,4 +30,11 @@ describe("secure migration baseline", () => {
     expect(sql).toContain('"customers_create_idempotency_unique"');
     expect(sql).toContain('"audit_events_idempotency_unique"');
   });
+
+  it("adds durable idempotency constraints for every F3 mutation", () => {
+    expect(sql).toContain('ALTER TABLE "crate_movements" ADD COLUMN "idempotency_key" text NOT NULL');
+    expect(sql).toContain('ALTER TABLE "deliveries" ADD COLUMN "idempotency_key" text NOT NULL');
+    expect(sql).toContain('"crate_movements_idempotency_unique"');
+    expect(sql).toContain('"deliveries_idempotency_unique"');
+  });
 });

@@ -1,30 +1,23 @@
 import { z } from "zod";
-import { decimalQuantitySchema, rupiahSchema } from "./contracts";
+import { dateSchema, decimalQuantitySchema, idempotencyKeySchema, optionalText, rupiahSchema, scaledQuantity, uuidSchema } from "./contracts";
 
-const uuid = z.string().uuid("ID harus berupa UUID yang valid.");
-const optionalText = z.string().trim().max(2_000, "Teks maksimal 2.000 karakter.").optional();
-const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Tanggal harus berformat YYYY-MM-DD.").refine((value) => {
-  const [year, month, day] = value.split("-").map(Number);
-  const date = new Date(Date.UTC(year, month - 1, day));
-  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
-}, "Tanggal kalender tidak valid.");
 
 export const customerCreateSchema = z.object({
-  idempotencyKey: z.string().uuid("Kunci idempotensi harus berupa UUID yang valid."),
+  idempotencyKey: idempotencyKeySchema,
   name: z.string().trim().min(1, "Nama pelanggan wajib diisi.").max(200, "Nama pelanggan maksimal 200 karakter."),
   whatsapp: z.string().trim().max(30, "Nomor WhatsApp maksimal 30 karakter.").optional(),
   address: optionalText,
   notes: optionalText,
 });
-export const customerUpdateSchema = customerCreateSchema.omit({ idempotencyKey: true }).partial().extend({ id: uuid, idempotencyKey: z.string().uuid("Kunci idempotensi harus berupa UUID yang valid.") }).refine(
+export const customerUpdateSchema = customerCreateSchema.omit({ idempotencyKey: true }).partial().extend({ id: uuidSchema, idempotencyKey: idempotencyKeySchema }).refine(
   (value) => (["name", "whatsapp", "address", "notes"] as const).some((key) => value[key] !== undefined),
   "Minimal satu data pelanggan harus diubah.",
 );
 export const customerListSchema = z.object({ query: z.string().trim().max(200).default(""), includeArchived: z.boolean().default(false), limit: z.number().int().min(1).max(100).default(20), offset: z.number().int().nonnegative().default(0) });
-export const customerIdSchema = z.object({ id: uuid });
-export const customerArchiveSchema = customerIdSchema.extend({ idempotencyKey: z.string().uuid("Kunci idempotensi harus berupa UUID yang valid.") });
+export const customerIdSchema = z.object({ id: uuidSchema });
+export const customerArchiveSchema = customerIdSchema.extend({ idempotencyKey: idempotencyKeySchema });
 export const customerRecordSchema = z.object({
-  id: uuid, customerNumber: z.string(), name: z.string(), whatsapp: z.string().nullable(),
+  id: uuidSchema, customerNumber: z.string(), name: z.string(), whatsapp: z.string().nullable(),
   address: z.string().nullable(), notes: z.string().nullable(), isActive: z.boolean(),
 });
 
@@ -39,11 +32,11 @@ const saleItemInputSchema = z.object({
 });
 
 export const saleMutationSchema = z.object({
-  customerId: uuid, transactionDate: dateSchema, items: z.array(saleItemInputSchema).min(1, "Minimal satu item penjualan wajib diisi."),
+  customerId: uuidSchema, transactionDate: dateSchema, items: z.array(saleItemInputSchema).min(1, "Minimal satu item penjualan wajib diisi."),
   discountRupiah: rupiahSchema.default(0), feeRupiah: rupiahSchema.default(0), notes: optionalText,
   paymentChoice: z.enum(["full", "down_payment", "debt"]), initialPaymentRupiah: rupiahSchema.default(0),
   paymentMethod: z.enum(["cash", "transfer", "other"]).optional(), dueDate: dateSchema.optional(),
-  idempotencyKey: z.string().uuid("Kunci idempotensi harus berupa UUID yang valid."), status: z.enum(["draft", "confirmed"]).default("confirmed"),
+  idempotencyKey: idempotencyKeySchema, status: z.enum(["draft", "confirmed"]).default("confirmed"),
 }).superRefine((sale, ctx) => {
   if (sale.paymentChoice === "debt" && sale.initialPaymentRupiah !== 0) ctx.addIssue({ code: "custom", path: ["initialPaymentRupiah"], message: "Penjualan utang tidak boleh memiliki pembayaran awal." });
   if (sale.paymentChoice === "down_payment" && sale.initialPaymentRupiah <= 0) ctx.addIssue({ code: "custom", path: ["initialPaymentRupiah"], message: "Nominal DP harus lebih dari nol." });
@@ -54,14 +47,14 @@ export const saleMutationSchema = z.object({
 });
 export type SaleMutationInput = z.infer<typeof saleMutationSchema>;
 export const saleRecordSchema = z.object({
-  id: uuid, invoiceNumber: z.string(), idempotencyKey: z.string().uuid(), totalRupiah: rupiahSchema,
+  id: uuidSchema, invoiceNumber: z.string(), idempotencyKey: idempotencyKeySchema, totalRupiah: rupiahSchema,
   paidRupiah: rupiahSchema, remainingRupiah: rupiahSchema,
   dueDate: dateSchema.nullable(), paymentStatus: z.enum(["unpaid", "partial", "paid", "due", "overdue"]), status: z.enum(["draft", "confirmed"]),
 });
 export type CustomerRecord = z.infer<typeof customerRecordSchema>;
 export type SaleRecord = z.infer<typeof saleRecordSchema>;
 export const saleListSchema = z.object({ query: z.string().trim().max(200).default(""), limit: z.number().int().min(1).max(100).default(50), offset: z.number().int().nonnegative().default(0) });
-export const saleIdSchema = z.object({ id: uuid });
+export const saleIdSchema = z.object({ id: uuidSchema });
 export type SaleListItem = SaleRecord & { customerName: string; transactionDate: string };
 export type SaleDetail = SaleListItem & { customerId: string; customerNumber: string; subtotalRupiah: number; discountRupiah: number; feeRupiah: number; notes: string | null; items: Array<{ id: string; description: string; pricingBasis: "crate" | "kg"; crateQuantity: string | null; weightKg: string | null; unitPriceRupiah: number; subtotalRupiah: number }>; payments: Array<{ id: string; amountRupiah: number; method: "cash" | "transfer" | "other"; paidAt: string }> };
 
@@ -72,14 +65,10 @@ export function derivePaymentStatus(remainingRupiah: number, paidRupiah: number,
   return paidRupiah > 0 ? "partial" as const : "unpaid" as const;
 }
 
-function scaled(value: string): bigint {
-  const [whole, fraction = ""] = value.split(".");
-  return BigInt(whole) * BigInt(1000) + BigInt(fraction.padEnd(3, "0"));
-}
 export function calculateSale(input: SaleMutationInput, today?: string) {
   const items = input.items.map((item) => {
     const quantity = item.pricingBasis === "crate" ? item.crateQuantity! : item.weightKg!;
-    const numerator = scaled(quantity) * BigInt(item.unitPriceRupiah);
+    const numerator = scaledQuantity(quantity) * BigInt(item.unitPriceRupiah);
     if (numerator % BigInt(1000) !== BigInt(0)) throw new Error("Subtotal item harus menghasilkan rupiah bulat.");
     const subtotalRupiah = Number(numerator / BigInt(1000));
     if (!Number.isSafeInteger(subtotalRupiah)) throw new Error("Subtotal item melebihi batas nominal yang didukung.");
