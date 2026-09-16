@@ -22,4 +22,12 @@ describe("secure migration baseline", () => {
   it("does not create browser-access policies during F1", () => {
     expect(sql).not.toMatch(/CREATE\s+POLICY/i);
   });
+
+  it("adds durable idempotency constraints for every F2 mutation", () => {
+    expect(sql).toContain('ADD COLUMN "create_idempotency_key" text');
+    expect(sql).toContain("'legacy:' || \"id\"::text");
+    expect(sql).toContain('ALTER COLUMN "create_idempotency_key" SET NOT NULL');
+    expect(sql).toContain('"customers_create_idempotency_unique"');
+    expect(sql).toContain('"audit_events_idempotency_unique"');
+  });
 });

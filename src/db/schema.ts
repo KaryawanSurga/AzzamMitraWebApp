@@ -47,8 +47,9 @@ export const customers = pgTable("customers", {
   name: text("name").notNull(),
   whatsapp: text("whatsapp"), address: text("address"), notes: text("notes"),
   isActive: boolean("is_active").default(true).notNull(),
+  createIdempotencyKey: text("create_idempotency_key").notNull(),
   ...timestamps,
-}, (t) => [uniqueIndex("customers_number_unique").on(t.customerNumber), index("customers_name_idx").on(t.name), check("customers_name_not_blank", sql`length(trim(${t.name})) > 0`)]).enableRLS();
+}, (t) => [uniqueIndex("customers_number_unique").on(t.customerNumber), uniqueIndex("customers_create_idempotency_unique").on(t.createIdempotencyKey), index("customers_name_idx").on(t.name), check("customers_name_not_blank", sql`length(trim(${t.name})) > 0`)]).enableRLS();
 
 export const sales = pgTable("sales", {
   id: uuid("id").defaultRandom().primaryKey(), invoiceNumber: text("invoice_number").notNull(),
@@ -97,5 +98,5 @@ export const adjustments = pgTable("adjustments", {
 }, (t) => [uniqueIndex("adjustments_number_unique").on(t.adjustmentNumber), index("adjustments_sale_idx").on(t.saleId), check("adjustments_amount_nonnegative", sql`${t.amountRupiah} >= 0`), check("adjustments_reason_not_blank", sql`length(trim(${t.reason})) > 0`)]).enableRLS();
 
 export const auditEvents = pgTable("audit_events", {
-  id: uuid("id").defaultRandom().primaryKey(), eventNumber: text("event_number").notNull(), actorId: uuid("actor_id").notNull().references(() => users.id, { onDelete: "restrict" }), entityType: text("entity_type").notNull(), entityId: uuid("entity_id").notNull(), action: text("action").notNull(), before: jsonb("before"), after: jsonb("after"), reason: text("reason"), occurredAt: timestamp("occurred_at", { withTimezone: true }).defaultNow().notNull(),
-}, (t) => [uniqueIndex("audit_events_number_unique").on(t.eventNumber), index("audit_events_entity_idx").on(t.entityType, t.entityId), index("audit_events_actor_date_idx").on(t.actorId, t.occurredAt), check("audit_events_action_not_blank", sql`length(trim(${t.action})) > 0`)]).enableRLS();
+  id: uuid("id").defaultRandom().primaryKey(), eventNumber: text("event_number").notNull(), idempotencyKey: text("idempotency_key"), actorId: uuid("actor_id").notNull().references(() => users.id, { onDelete: "restrict" }), entityType: text("entity_type").notNull(), entityId: uuid("entity_id").notNull(), action: text("action").notNull(), before: jsonb("before"), after: jsonb("after"), reason: text("reason"), occurredAt: timestamp("occurred_at", { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [uniqueIndex("audit_events_number_unique").on(t.eventNumber), uniqueIndex("audit_events_idempotency_unique").on(t.idempotencyKey), index("audit_events_entity_idx").on(t.entityType, t.entityId), index("audit_events_actor_date_idx").on(t.actorId, t.occurredAt), check("audit_events_action_not_blank", sql`length(trim(${t.action})) > 0`)]).enableRLS();

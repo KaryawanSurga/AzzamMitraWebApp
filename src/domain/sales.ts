@@ -10,17 +10,19 @@ const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Tanggal harus berfor
 }, "Tanggal kalender tidak valid.");
 
 export const customerCreateSchema = z.object({
+  idempotencyKey: z.string().uuid("Kunci idempotensi harus berupa UUID yang valid."),
   name: z.string().trim().min(1, "Nama pelanggan wajib diisi.").max(200, "Nama pelanggan maksimal 200 karakter."),
   whatsapp: z.string().trim().max(30, "Nomor WhatsApp maksimal 30 karakter.").optional(),
   address: optionalText,
   notes: optionalText,
 });
-export const customerUpdateSchema = customerCreateSchema.partial().extend({ id: uuid }).refine(
+export const customerUpdateSchema = customerCreateSchema.omit({ idempotencyKey: true }).partial().extend({ id: uuid, idempotencyKey: z.string().uuid("Kunci idempotensi harus berupa UUID yang valid.") }).refine(
   (value) => (["name", "whatsapp", "address", "notes"] as const).some((key) => value[key] !== undefined),
   "Minimal satu data pelanggan harus diubah.",
 );
 export const customerListSchema = z.object({ query: z.string().trim().max(200).default(""), includeArchived: z.boolean().default(false), limit: z.number().int().min(1).max(100).default(20), offset: z.number().int().nonnegative().default(0) });
 export const customerIdSchema = z.object({ id: uuid });
+export const customerArchiveSchema = customerIdSchema.extend({ idempotencyKey: z.string().uuid("Kunci idempotensi harus berupa UUID yang valid.") });
 export const customerRecordSchema = z.object({
   id: uuid, customerNumber: z.string(), name: z.string(), whatsapp: z.string().nullable(),
   address: z.string().nullable(), notes: z.string().nullable(), isActive: z.boolean(),
@@ -54,10 +56,17 @@ export type SaleMutationInput = z.infer<typeof saleMutationSchema>;
 export const saleRecordSchema = z.object({
   id: uuid, invoiceNumber: z.string(), idempotencyKey: z.string().uuid(), totalRupiah: rupiahSchema,
   paidRupiah: rupiahSchema, remainingRupiah: rupiahSchema,
-  paymentStatus: z.enum(["unpaid", "partial", "paid", "due", "overdue"]), status: z.enum(["draft", "confirmed"]),
+  dueDate: dateSchema.nullable(), paymentStatus: z.enum(["unpaid", "partial", "paid", "due", "overdue"]), status: z.enum(["draft", "confirmed"]),
 });
 export type CustomerRecord = z.infer<typeof customerRecordSchema>;
 export type SaleRecord = z.infer<typeof saleRecordSchema>;
+
+export function derivePaymentStatus(remainingRupiah: number, paidRupiah: number, dueDate: string | null | undefined, today: string) {
+  if (remainingRupiah === 0) return "paid" as const;
+  if (dueDate && dueDate < today) return "overdue" as const;
+  if (dueDate === today) return "due" as const;
+  return paidRupiah > 0 ? "partial" as const : "unpaid" as const;
+}
 
 function scaled(value: string): bigint {
   const [whole, fraction = ""] = value.split(".");
@@ -79,7 +88,7 @@ export function calculateSale(input: SaleMutationInput, today?: string) {
   const paidRupiah = input.paymentChoice === "full" ? totalRupiah : input.paymentChoice === "debt" ? 0 : input.initialPaymentRupiah;
   if (paidRupiah > totalRupiah) throw new Error("Pembayaran awal tidak boleh melebihi total penjualan.");
   const remainingRupiah = totalRupiah - paidRupiah;
-  const paymentStatus = remainingRupiah === 0 ? "paid" : input.dueDate && today && input.dueDate < today ? "overdue" : input.dueDate && today && input.dueDate === today ? "due" : paidRupiah > 0 ? "partial" : "unpaid";
+  const paymentStatus = derivePaymentStatus(remainingRupiah, paidRupiah, input.dueDate, today ?? "0000-00-00");
   return { items, subtotalRupiah, totalRupiah, paidRupiah, remainingRupiah, paymentStatus } as const;
 }
 
