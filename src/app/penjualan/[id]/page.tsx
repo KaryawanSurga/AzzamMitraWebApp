@@ -5,7 +5,7 @@ import { getSaleOperationsAction } from "@/app/actions/f3";
 import { DeliveryPanel } from "@/components/delivery-panel";
 import { InternalShell } from "@/components/internal-shell";
 import { PaymentForm } from "@/components/payment-form";
-import { ErrorState, PageHeader, PaymentBadge, formatCrate, rupiah } from "@/components/ui";
+import { ErrorState, PageHeader, PaymentBadge, formatCrate, formatItemQuantity, rupiah } from "@/components/ui";
 import { sumCrateMilli } from "@/domain/crates";
 import { getCurrentOwner } from "@/lib/supabase/owner";
 
@@ -31,7 +31,7 @@ export default async function SaleDetailPage({ params, searchParams }: { params:
               <h2>Item</h2>
               {result.data.items.map((item) => (
                 <div className="invoice-item" key={item.id}>
-                  <div><strong>{item.description}</strong><span>{item.pricingBasis === "crate" ? `${item.crateQuantity} peti` : `${item.weightKg} kg`} × {rupiah(item.unitPriceRupiah)}</span></div>
+                  <div><strong>{item.description}</strong><span>{item.pricingBasis === "crate" ? `${formatItemQuantity(item.crateQuantity)} peti` : `${formatItemQuantity(item.weightKg)} kg`} × {rupiah(item.unitPriceRupiah)}</span></div>
                   <strong>{rupiah(item.subtotalRupiah)}</strong>
                 </div>
               ))}

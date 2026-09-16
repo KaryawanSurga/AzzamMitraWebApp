@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { milliToQuantity } from "@/domain/contracts";
+import { milliToQuantity, quantityToMilli } from "@/domain/contracts";
 import type { AppErrorCode } from "@/server/result";
 
 export const rupiah = (value: number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(value);
@@ -8,8 +8,9 @@ export const deliveryLabels = { unprocessed: "Belum diproses", preparing: "Disia
 export const movementLabels = { out: "Peti keluar", return: "Peti kembali", adjustment: "Penyesuaian" } as const;
 
 /* Kuantitas ditampilkan dengan koma desimal Indonesia. */
-export const formatQuantity = (milli: number) => milliToQuantity(milli).replace(".", ",");
+const formatQuantity = (milli: number) => milliToQuantity(milli).replace(".", ",");
 export const formatCrate = (milli: number) => `${formatQuantity(milli)} peti`;
+export const formatItemQuantity = (value: string | null): string => value === null ? "-" : formatQuantity(quantityToMilli(value));
 
 export function PaymentBadge({ status }: { status: keyof typeof paymentLabels }) { return <span className={`status status-${status}`}>{paymentLabels[status]}</span>; }
 export function DeliveryBadge({ status }: { status: keyof typeof deliveryLabels }) { return <span className={`status delivery-${status}`}>{deliveryLabels[status]}</span>; }
