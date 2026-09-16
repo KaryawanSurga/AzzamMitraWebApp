@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Azzam Mitra Brand System</title>
+<style>
+  :root{
+    --hijau:#24462C;
+    --hijau-dalam:#193722;
+    --hijau-kanvas:#16281B;
+    --krem:#F6F4EE;
+    --putih:#FFFFFF;
+    --amber:#D89B35;
+    --arang:#1B211A;
+    --daun:#526E57;
+    --abu:#D9DDD5;
+    --garis:#C9CFC4;
+    --serif:"Constantia","Georgia",serif;
+    --sans:"Segoe UI",Arial,sans-serif;
+    --teknsi:"Bahnschrift","Segoe UI",Arial,sans-serif;
+    --mono:"Consolas","Courier New",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1600px;height:1200px;overflow:hidden}
+  body{background:var(--hijau-kanvas);font-family:var(--sans);color:var(--arang);-webkit-font-smoothing:antialiased}
+  .board{
+    width:1600px;height:1200px;padding:44px 44px 30px;display:grid;
+    grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr) 16px;gap:20px;
+  }
+  .panel{position:relative;background:var(--krem);border-radius:16px;padding:24px;overflow:hidden}
+  .panel.dark{background:var(--hijau-dalam);color:var(--krem)}
+  .panel.white{background:var(--putih)}
+  .idx{position:absolute;top:18px;right:20px;font-family:var(--teknsi);font-size:9px;letter-spacing:.22em;color:#A9B3A6}
+  .panel.dark .idx{color:#7E9483}
+  .tag{font-family:var(--teknsi);font-size:8.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--daun)}
+  .panel.dark .tag{color:#9FBBA6}
+  .foot{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;font-family:var(--teknsi);font-size:8px;letter-spacing:.24em;color:#6E8574;text-transform:uppercase}
+  svg{display:block}
+
+  /* 01 cover */
+  .cover{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px}
+  .cover .word{font-family:var(--serif);font-weight:700;font-size:44px;letter-spacing:.035em;color:var(--hijau);line-height:1}
+  .cover .rule{width:72px;height:2px;background:var(--garis)}
+  .cover .sub{font-family:var(--teknsi);font-size:12px;letter-spacing:.34em;color:var(--daun);text-transform:uppercase}
+  .cover .note{position:absolute;left:24px;bottom:22px;width:302px;font-size:10.5px;line-height:1.5;color:var(--daun)}
+
+  /* 02 construction */
+  .konstruksi{display:grid;grid-template-columns:236px minmax(0,1fr);gap:20px}
+  .stage{position:relative;width:236px;height:236px;align-self:center;display:grid;place-items:center}
+  .stage .grid{position:absolute;inset:0}
+  .specs{display:grid;align-content:center}
+  .spec{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--abu)}
+  .spec:first-of-type{border-top:1px solid var(--abu)}
+  .spec span:first-child{font-size:10.5px;color:var(--daun)}
+  .spec span:last-child{font-family:var(--teknsi);font-size:11px;color:var(--hijau)}
+
+  /* 03 digital */
+  .digital{display:grid;grid-template-columns:minmax(0,1fr) 186px;gap:22px}
+  .phone{width:236px;background:var(--putih);border-radius:22px;border:1px solid var(--abu);overflow:hidden;box-shadow:0 12px 30px rgba(20,40,25,.10)}
+  .phone .bar{display:flex;align-items:center;gap:8px;height:38px;padding:0 12px;background:var(--hijau);color:var(--krem)}
+  .phone .bar b{font-family:var(--serif);font-weight:700;font-size:11.5px;letter-spacing:.06em}
+  .phone .body{padding:11px 12px 0}
+  .phone .lbl{font-family:var(--teknsi);font-size:7.5px;letter-spacing:.2em;color:var(--daun);text-transform:uppercase}
+  .phone .big{font-family:var(--teknsi);font-size:19px;color:var(--hijau);margin-top:3px}
+  .phone .rows{margin:9px 0 11px;border-top:1px solid #E6E9E4}
+  .phone .row{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid #E6E9E4;font-size:9.5px;color:#4C574D}
+  .phone .row b{font-family:var(--teknsi);font-weight:400;color:var(--arang)}
+  .phone .cta{background:var(--hijau);color:#fff;border-radius:8px;padding:9px 10px;font-size:10px;font-weight:700;text-align:center}
+  .phone .nav{display:flex;justify-content:space-between;margin-top:10px;padding:8px 12px 9px;border-top:1px solid #E6E9E4;font-size:7px;letter-spacing:.05em;color:#7C877D}
+  .phone .nav span:first-child{color:var(--hijau);font-weight:700}
+  .mock-note{margin-top:10px;font-family:var(--teknsi);font-size:8.5px;letter-spacing:.16em;color:var(--daun);text-transform:uppercase}
+  .apps{display:grid;gap:12px;align-content:start;padding-top:24px}
+  .icon-tile{width:84px;height:84px;border-radius:20px;background:var(--hijau);display:grid;place-items:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+  .apps small{font-size:9.5px;color:var(--daun);line-height:1.5}
+  .field{display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;background:var(--putih);border:1px solid #879187;border-radius:9px;font-size:10px;color:#8B948B}
+
+  /* 04 essence */
+  .esensi{display:grid;align-content:center;gap:16px}
+  .esensi h2{font-family:var(--serif);font-weight:700;font-size:50px;line-height:1.06;letter-spacing:.005em;color:var(--krem)}
+  .esensi p{font-size:14px;line-height:1.6;color:#C6D3C6;max-width:334px}
+  .pillars{display:flex;gap:18px;padding-top:14px;border-top:1px solid #2E4C36}
+  .pillars div{font-family:var(--teknsi);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#9FBBA6}
+
+  /* 05 color */
+  .warna{display:grid;gap:7px;align-content:center}
+  .sw{display:flex;align-items:center;gap:12px}
+  .sw i{display:block;flex:1;height:26px;border-radius:8px;border:1px solid rgba(27,33,26,.10)}
+  .sw div{width:176px;display:flex;justify-content:space-between;gap:10px;flex:none}
+  .sw .name{font-size:11px;font-weight:700}
+  .sw .hex{font-family:var(--teknsi);font-size:10px;color:var(--daun)}
+  .minor{display:flex;gap:10px}
+  .minor i{flex:1;height:15px;border-radius:5px;border:1px solid rgba(27,33,26,.10)}
+  .legend{display:flex;justify-content:space-between;font-family:var(--teknsi);font-size:8.5px;letter-spacing:.14em;color:var(--daun);text-transform:uppercase}
+  .ratio{display:flex;height:10px;border-radius:5px;overflow:hidden}
+  .ratio i{display:block;height:100%}
+  .rule-note{font-size:10.5px;line-height:1.5;color:var(--daun);margin-top:4px;padding-top:9px;border-top:1px solid var(--abu)}
+
+  /* 06 typography */
+  .tipografi{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-content:start}
+  .specimen{display:grid;gap:6px}
+  .specimen .aa{font-size:54px;line-height:.95;color:var(--hijau)}
+  .specimen .aa.serif{font-family:var(--serif);font-weight:700}
+  .specimen .aa.sans{font-family:var(--sans);font-weight:600;letter-spacing:-.02em}
+  .specimen small{font-size:10px;line-height:1.5;color:var(--daun)}
+  .numeral{grid-column:1/-1;padding-top:10px;border-top:1px solid var(--abu);display:flex;align-items:baseline;gap:16px}
+  .numeral b{font-family:var(--teknsi);font-weight:400;font-size:29px;color:var(--hijau);letter-spacing:.02em;font-variant-numeric:tabular-nums}
+  .numeral span{font-size:12px;color:var(--daun)}
+  .scale{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:0 26px}
+  .scale div{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--abu);font-size:10.5px;color:var(--daun)}
+  .scale div b{font-family:var(--teknsi);font-weight:400;color:var(--arang)}
+  .scale-note{grid-column:1/-1;font-size:10px;line-height:1.5;color:var(--daun)}
+
+  /* 07 physical */
+  .fisik{display:grid;grid-template-columns:178px minmax(0,1fr);gap:20px;align-items:start}
+  .sticker{width:168px;height:168px;border-radius:14px;background:var(--hijau);color:var(--krem);display:grid;place-items:center;gap:8px;padding:18px;text-align:center}
+  .sticker b{font-family:var(--serif);font-size:13px;letter-spacing:.05em}
+  .sticker span{font-family:var(--teknsi);font-size:8px;letter-spacing:.22em;color:#A9C3B0}
+  .receipt{background:var(--putih);border:1px solid var(--abu);border-radius:8px;padding:13px;font-family:var(--mono);font-size:9.5px;line-height:1.5;color:#333B33}
+  .receipt .rt{display:flex;flex-direction:column;align-items:center;gap:4px;padding-bottom:8px;border-bottom:1px dashed #C4CAC3}
+  .receipt .rt b{font-family:var(--serif);font-size:11px;letter-spacing:.08em;color:var(--hijau)}
+  .receipt .rl{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px dashed #DDE1DB}
+  .receipt .rl.total{border-bottom:0;font-weight:700;color:var(--hijau)}
+  .receipt .cut{display:flex;align-items:center;gap:6px;padding-top:9px;font-size:8.5px;letter-spacing:.16em;color:#9AA29A}
+  .receipt .cut i{flex:1;height:1px;background:repeating-linear-gradient(90deg,#C4CAC3 0 4px,transparent 4px 8px)}
+  .fisik-cap{margin-top:10px;font-size:10px;line-height:1.5;color:var(--daun)}
+
+  /* 08 image direction */
+  .arah{padding:0}
+  .arah .field-tex{position:absolute;inset:0;width:100%;height:100%}
+  .arah .cap{position:absolute;left:24px;bottom:22px;width:300px;font-size:10.5px;line-height:1.5;color:#C6D3C6}
+  .arah .tag{position:absolute;left:24px;top:22px}
+
+  /* 09 system detail */
+  .sistem{display:grid;gap:10px;align-content:start}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chips span{display:inline-flex;align-items:center;height:22px;padding:0 10px;border-radius:999px;font-size:9.5px;font-weight:700}
+  .s-lunas{background:#D9EDDD;color:#205B2D}
+  .s-sebagian{background:#F5E7C4;color:#76530F}
+  .s-belum{background:#E7E9E7;color:#3F4740}
+  .s-terlambat{background:#F3D8D5;color:#88291F}
+  .focus-field{display:flex;align-items:center;gap:8px;height:36px;padding:0 10px;background:var(--putih);border:1px solid #879187;border-radius:9px;font-size:10.5px;color:#8B948B;outline:3px solid rgba(216,155,53,.55);outline-offset:2px}
+  .icons{display:flex;gap:10px}
+  .icons div{width:50px;height:50px;border-radius:12px;background:var(--putih);border:1px solid var(--abu);display:grid;place-items:center}
+  .pattern{height:32px;border-radius:9px;overflow:hidden;border:1px solid var(--abu)}
+  .sistem small{font-size:9.5px;line-height:1.5;color:var(--daun)}
+  .divider{height:1px;background:var(--abu);margin:1px 0}
+</style>
+</head>
+<body>
+<div class="board">
+
+  <!-- 01 COVER -->
+  <section class="panel cover">
+    <span class="idx">01</span>
+    <svg data-mark="132" data-ink="#24462C" width="132" height="132" viewBox="0 0 120 120"></svg>
+    <div style="display:grid;justify-items:center;gap:16px">
+      <div class="word">AZZAM MITRA</div>
+      <div class="rule"></div>
+      <div class="sub">Distributor Telur</div>
+    </div>
+    <p class="note">Mark: huruf A dari Azzam sebagai peti, telur sebagai inti usaha. Satu bentuk, tiga makna.</p>
+  </section>
+
+  <!-- 02 CONSTRUCTION -->
+  <section class="panel white konstruksi">
+    <span class="idx">02</span>
+    <div class="stage">
+      <svg class="grid" viewBox="0 0 120 120" width="236" height="236"></svg>
+      <svg data-mark="196" data-ink="#24462C" width="196" height="196" viewBox="0 0 120 120" style="position:relative"></svg>
+    </div>
+    <div class="specs">
+      <span class="tag" style="margin-bottom:10px">Konstruksi</span>
+      <div class="spec"><span>Grid</span><span>10 × 10 · satuan 12</span></div>
+      <div class="spec"><span>Tinggi huruf A</span><span>68 unit</span></div>
+      <div class="spec"><span>Sudut kaki</span><span>29° dari vertikal</span></div>
+      <div class="spec"><span>Telur</span><span>22 × 27 unit</span></div>
+      <div class="spec"><span>Berat garis</span><span>13 unit</span></div>
+      <div class="spec"><span>Ruang bebas</span><span>1/4 tinggi mark</span></div>
+    </div>
+  </section>
+
+  <!-- 03 DIGITAL -->
+  <section class="panel digital">
+    <span class="idx">03</span>
+    <div>
+      <span class="tag">Aplikasi</span>
+      <div class="phone" style="margin-top:12px">
+        <div class="bar">
+          <svg data-mark="18" data-ink="#F6F4EE" width="18" height="18" viewBox="0 0 120 120"></svg>
+          <b>Azzam Mitra</b>
+        </div>
+        <div class="body">
+          <div class="lbl">Penjualan hari ini</div>
+          <div class="big">Rp4.320.000</div>
+          <div class="rows">
+            <div class="row"><span>Piutang berjalan</span><b>Rp1.850.000</b></div>
+            <div class="row"><span>Peti di pelanggan</span><b>42</b></div>
+          </div>
+          <div class="cta">Catat Penjualan</div>
+        </div>
+        <div class="nav"><span>Dashboard</span><span>Penjualan</span><span>Pengeluaran</span><span>Pelanggan</span></div>
+      </div>
+      <p class="mock-note">Data contoh</p>
+    </div>
+    <div class="apps">
+      <div class="icon-tile">
+        <svg data-mark="52" data-ink="#F6F4EE" width="52" height="52" viewBox="0 0 120 120"></svg>
+      </div>
+      <small>Ikon aplikasi 84 px</small>
+      <div class="field">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#526E57" stroke-width="2"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>
+        Cari pelanggan
+      </div>
+      <small>Kolom pencarian memakai mark sebagai ikon.</small>
+    </div>
+  </section>
+
+  <!-- 04 ESSENCE -->
+  <section class="panel dark esensi">
+    <span class="idx">04</span>
+    <span class="tag">Esensi</span>
+    <h2>Rapi sampai<br>peti terakhir.</h2>
+    <p>Catat penjualan dan pengeluaran dari HP. Sisa piutang dan saldo peti ikut terhitung.</p>
+    <div class="pillars"><div>Catat cepat</div><div>Piutang jelas</div><div>Peti terlacak</div></div>
+  </section>
+
+  <!-- 05 COLOR -->
+  <section class="panel warna">
+    <span class="idx">05</span>
+    <span class="tag" style="margin-bottom:2px">Warna</span>
+    <div class="sw"><div><span class="name">Hijau Mitra</span><span class="hex">#24462C</span></div><i style="background:#24462C"></i></div>
+    <div class="sw"><div><span class="name">Hijau Dalam</span><span class="hex">#193722</span></div><i style="background:#193722"></i></div>
+    <div class="sw"><div><span class="name">Krem Pembukuan</span><span class="hex">#F6F4EE</span></div><i style="background:#F6F4EE"></i></div>
+    <div class="sw"><div><span class="name">Amber Telur</span><span class="hex">#D89B35</span></div><i style="background:#D89B35"></i></div>
+    <div class="minor"><i style="background:#1B211A"></i><i style="background:#526E57"></i><i style="background:#D9DDD5"></i></div>
+    <div class="legend"><span>Arang #1B211A</span><span>Daun #526E57</span><span>Abu #D9DDD5</span></div>
+    <div class="ratio"><i style="background:#F6F4EE;width:60%"></i><i style="background:#24462C;width:22%"></i><i style="background:#193722;width:10%"></i><i style="background:#D89B35;width:8%"></i></div>
+    <div class="legend"><span>Krem 60</span><span>Hijau 22</span><span>Dalam 10</span><span>Amber 8</span></div>
+    <p class="rule-note">Amber hanya untuk telur dan sorotan. Tombol utama tetap hijau.</p>
+  </section>
+
+  <!-- 06 TYPOGRAPHY -->
+  <section class="panel tipografi">
+    <span class="idx">06</span>
+    <span class="tag" style="grid-column:1/-1">Tipografi</span>
+    <div class="specimen">
+      <span class="aa serif">Aa</span>
+      <small>Constantia · nama merek, tagline, judul struk</small>
+    </div>
+    <div class="specimen">
+      <span class="aa sans">Aa</span>
+      <small>Segoe UI · antarmuka, label, isi</small>
+    </div>
+    <div class="numeral"><b>Rp1.284.500</b><span>10 peti · 103,5 kg</span></div>
+    <div class="scale">
+      <div><span>Display</span><b>46 / 1.02 / -0.01</b></div>
+      <div><span>Judul</span><b>28 / 1.15 / 0</b></div>
+      <div><span>Isi</span><b>16 / 1.55 / 0</b></div>
+      <div><span>Label</span><b>11 / 1.2 / 0.18</b></div>
+    </div>
+    <p class="scale-note">Angka nominal memakai tabular agar kolom rupiah selalu rata.</p>
+  </section>
+
+  <!-- 07 PHYSICAL -->
+  <section class="panel fisik">
+    <span class="idx">07</span>
+    <div>
+      <span class="tag">Aplikasi fisik</span>
+      <div class="sticker" style="margin-top:12px">
+        <svg data-mark="56" data-ink="#F6F4EE" width="56" height="56" viewBox="0 0 120 120"></svg>
+        <b>AZZAM MITRA</b>
+        <span>NO. PETI 012</span>
+      </div>
+      <p class="fisik-cap">Label peti dan struk thermal 58 mm.</p>
+    </div>
+    <div class="receipt" style="margin-top:24px">
+      <div class="rt">
+        <svg data-mark="26" data-ink="#24462C" width="26" height="26" viewBox="0 0 120 120"></svg>
+        <b>AZZAM MITRA</b>
+        <span style="font-family:var(--sans);font-size:8px;letter-spacing:.2em;color:#6C776C">DISTRIBUTOR TELUR</span>
+      </div>
+      <div class="rl"><span>INV-2026-0007</span><span>14 Agu</span></div>
+      <div class="rl"><span>Telur 10 peti</span><span>Rp4.320.000</span></div>
+      <div class="rl"><span>DP transfer</span><span>Rp2.000.000</span></div>
+      <div class="rl total"><span>Sisa</span><span>Rp2.320.000</span></div>
+      <div class="rl"><span>Peti dibawa</span><span>10</span></div>
+      <div class="rl"><span>Jatuh tempo</span><span>28 Agu</span></div>
+      <div class="cut"><i></i>STRUK CONTOH<i></i></div>
+    </div>
+  </section>
+
+  <!-- 08 IMAGE DIRECTION -->
+  <section class="panel dark arah">
+    <span class="idx">08</span>
+    <span class="tag">Arah visual</span>
+    <svg class="field-tex" viewBox="0 0 490 350" preserveAspectRatio="xMidYMid slice"></svg>
+    <p class="cap">Duotone hijau dan krem. Butir telur sebagai pola, bukan foto stok generik.</p>
+  </section>
+
+  <!-- 09 SYSTEM DETAIL -->
+  <section class="panel sistem">
+    <span class="idx">09</span>
+    <span class="tag">Detail sistem</span>
+    <div class="chips">
+      <span class="s-lunas">Lunas</span><span class="s-sebagian">Sebagian</span><span class="s-belum">Belum dibayar</span><span class="s-terlambat">Terlambat</span>
+    </div>
+    <small>Status memakai warna baku, bukan warna baru.</small>
+    <div class="focus-field">
+      <svg data-mark="16" data-ink="#24462C" width="16" height="16" viewBox="0 0 120 120"></svg>
+      Nominal pembayaran
+    </div>
+    <div class="icons">
+      <div><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#24462C" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M3 10h18M12 5v14"/></svg></div>
+      <div><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#24462C" stroke-width="2"><ellipse cx="12" cy="13.5" rx="6" ry="7.5" transform="rotate(180 12 13.5)"/></svg></div>
+      <div><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#24462C" stroke-width="2" stroke-linecap="round"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></div>
+      <div><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#24462C" stroke-width="2" stroke-linecap="round"><path d="M4 16h16M12 4v7M9 8l3 3 3-3"/></svg></div>
+    </div>
+    <small>Ikon 24 px, garis 2 px, satu bentuk per aksi.</small>
+    <div class="pattern"><svg width="100%" height="32" viewBox="0 0 300 32" preserveAspectRatio="none"></svg></div>
+    <small>Pola peti untuk sampul laporan dan header struk.</small>
+  </section>
+
+  <footer class="foot">
+    <span>Azzam Mitra · Brand System v1</span>
+    <span>Mark · Konstruksi · Warna · Tipografi · Aplikasi · Sistem</span>
+  </footer>
+</div>
+
+<script>
+const EGG_X = 11, EGG_Y = 13.5, EGG_CY = 60;
+const eggPath = (cx, cy, rx, ry) =>
+  `M${cx} ${cy - ry}C${cx + rx * 0.62} ${cy - ry + ry * 0.16} ${cx + rx} ${cy + ry * 0.30} ${cx + rx} ${cy + ry * 0.16}
+   C${cx + rx} ${cy + ry * 0.72} ${cx + rx * 0.60} ${cy + ry} ${cx} ${cy + ry}
+   C${cx - rx * 0.60} ${cy + ry} ${cx - rx} ${cy + ry * 0.72} ${cx - rx} ${cy + ry * 0.16}
+   C${cx - rx} ${cy + ry * 0.30} ${cx - rx * 0.62} ${cy - ry + ry * 0.16} ${cx} ${cy - ry}Z`;
+
+const MARK = (ink) => `
+  <g fill="none" stroke="${ink}" stroke-width="13" stroke-linecap="butt" stroke-linejoin="round">
+    <path d="M22 101 L60 33 L98 101"/>
+  </g>
+  <path d="M41 79 H79" fill="none" stroke="${ink}" stroke-width="11" stroke-linecap="butt"/>
+  <path d="${eggPath(60, EGG_CY, EGG_X, EGG_Y)}" fill="#D89B35"/>`;
+
+document.querySelectorAll('[data-mark]').forEach((el) => {
+  el.innerHTML = MARK(el.dataset.ink || '#24462C');
+});
+
+const grid = document.querySelector('.stage .grid');
+if (grid) {
+  let g = '<g stroke="#DCE3DA" stroke-width="0.6">';
+  for (let i = 0; i <= 10; i++) {
+    const p = i * 12;
+    g += `<path d="M${p} 0 V120"/><path d="M0 ${p} H120"/>`;
+  }
+  g += '</g>';
+  g += '<g fill="none" stroke="#C3D0C1" stroke-width="0.7" stroke-dasharray="3 3">';
+  g += '<circle cx="60" cy="60" r="34"/><circle cx="60" cy="60" r="13.5"/>';
+  g += '</g>';
+  g += '<g stroke="#D89B35" stroke-width="0.8" fill="none">';
+  g += '<path d="M60 46.5 V73.5" stroke-dasharray="2 3"/>';
+  g += '<path d="M49 60 H71" stroke-dasharray="2 3"/>';
+  g += '<path d="M47.4 78.3 A26 26 0 0 0 60 75"/>';
+  g += '</g>';
+  g += `<text x="12" y="84" font-family="Bahnschrift, Arial" font-size="6.2" fill="#B07E22">29°</text>`;
+  g += `<text x="4" y="116" font-family="Bahnschrift, Arial" font-size="5.6" fill="#B07E22">telur 22 × 27 unit</text>`;
+  g += '<g stroke="#9FB0A0" stroke-width="0.6" fill="none">';
+  g += '<path d="M60 33 V29"/><path d="M22 101 V105"/><path d="M98 101 V105"/><path d="M41 105 H79"/>';
+  g += '</g>';
+  grid.innerHTML = g;
+}
+
+const pat = document.querySelector('.pattern svg');
+if (pat) {
+  let d = '<rect width="300" height="32" fill="#F6F4EE"/>';
+  d += '<g stroke="#24462C" stroke-opacity="0.28" stroke-width="1">';
+  for (let x = 0; x <= 300; x += 25) d += `<path d="M${x} 0 V32"/>`;
+  d += '</g><g stroke="#24462C" stroke-opacity="0.42" stroke-width="1">';
+  d += '<path d="M0 16 H300"/><path d="M12.5 0 V32"/><path d="M37.5 0 V32"/></g>';
+  d += '<g stroke="#D89B35" stroke-opacity="0.75" stroke-width="1"><path d="M0 6 H300" stroke-dasharray="2 6"/></g>';
+  pat.innerHTML = d;
+}
+
+const tex = document.querySelector('.field-tex');
+if (tex) {
+  const cells = [];
+  const cols = 4, rows = 2;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const x = 52 + c * 108 + (r % 2 ? 40 : 0);
+      const y = 40 + r * 128;
+      cells.push(`<g transform="translate(${x} ${y})">
+        <ellipse cx="34" cy="42" rx="30" ry="38" transform="rotate(180 34 42)" fill="url(#eggGrad)"/>
+        <ellipse cx="34" cy="42" rx="30" ry="38" transform="rotate(180 34 42)" fill="url(#dots)"/>
+      </g>`);
+    }
+  }
+  tex.innerHTML = `
+    <defs>
+      <radialGradient id="glow" cx="30%" cy="16%" r="86%">
+        <stop offset="0%" stop-color="#35573F"/>
+        <stop offset="100%" stop-color="#152619"/>
+      </radialGradient>
+      <radialGradient id="warm" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#D89B35" stop-opacity="0.30"/>
+        <stop offset="100%" stop-color="#D89B35" stop-opacity="0"/>
+      </radialGradient>
+      <pattern id="dots" width="5" height="5" patternUnits="userSpaceOnUse">
+        <circle cx="1.6" cy="1.6" r="1.2" fill="#F6F4EE" fill-opacity="0.42"/>
+      </pattern>
+      <linearGradient id="eggGrad" x1="0.2" y1="0" x2="0.7" y2="1">
+        <stop offset="0%" stop-color="#F6F4EE" stop-opacity="0.78"/>
+        <stop offset="60%" stop-color="#D89B35" stop-opacity="0.26"/>
+        <stop offset="100%" stop-color="#D89B35" stop-opacity="0.06"/>
+      </linearGradient>
+      <linearGradient id="scrim" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#152619" stop-opacity="0"/>
+        <stop offset="100%" stop-color="#152619" stop-opacity="0.94"/>
+      </linearGradient>
+      <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2"/><feColorMatrix type="saturate" values="0"/></filter>
+    </defs>
+    <rect width="490" height="350" fill="url(#glow)"/>
+    <ellipse cx="240" cy="130" rx="210" ry="150" fill="url(#warm)"/>
+    ${cells.join('')}
+    <g stroke="#EFE6D2" stroke-opacity="0.30" stroke-width="1">
+      <path d="M20 26 H34"/><path d="M20 26 V40"/><path d="M470 26 H456"/><path d="M470 26 V40"/>
+      <path d="M20 324 H34"/><path d="M20 324 V310"/><path d="M470 324 H456"/><path d="M470 324 V310"/>
+    </g>
+    <rect width="490" height="350" filter="url(#grain)" opacity="0.07" style="mix-blend-mode:screen"/>
+    <rect x="0" y="216" width="490" height="134" fill="url(#scrim)"/>`;
+}
+</script>
+</body>
+</html>

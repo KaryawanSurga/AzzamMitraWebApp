@@ -1,6 +1,6 @@
 # Azzam Mitra Webapp
 
-Fondasi Fase 1 serta backend Fase 2 aplikasi operasional internal Azzam Mitra: autentikasi owner, pelanggan, dan transaksi penjualan atomik.
+Fondasi Fase 1 serta implementasi Fase 2 aplikasi operasional internal Azzam Mitra: autentikasi owner, pelanggan, dan transaksi penjualan atomik beserta UI responsifnya.
 
 ## Prasyarat
 
@@ -63,10 +63,11 @@ npm run db:studio    # buka Drizzle Studio (memerlukan DATABASE_URL)
 - `src/server/f2` — service dan repository server-only untuk pelanggan/penjualan.
 - `src/test` — setup test bersama.
 - `docs` — PRD, workflow, spesifikasi teknis, dan UAT sebagai source of truth.
+- `brand` — brand kit Azzam Mitra: board, logo SVG, dan sumbernya. Token warna dan tipografi dipakai langsung oleh `src/app/globals.css`.
 
 `npm run db:generate` hanya membandingkan file schema dengan snapshot Drizzle dan tidak membuka koneksi database. Periksa SQL di `drizzle/` sebelum menjalankan `npm run db:migrate` pada database yang dituju. Baseline migration F1 mengaktifkan RLS pada seluruh 11 tabel aplikasi tanpa policy client, sehingga role `anon`/`authenticated` ditolak secara default. Backend tepercaya tetap dapat bekerja melalui koneksi PostgreSQL atau service role. Migration tidak dijalankan otomatis dan repository tidak memuat secret.
 
-Fase 2 menyediakan server actions di `src/app/actions/f2.ts`; semua read/mutation melewati guard owner dan mengembalikan union result typed (`validation`, `unauthorized`, `not_found`, `conflict`, atau `retryable`). Setiap mutasi pelanggan dan penjualan wajib membawa UUID `idempotencyKey`; retry mengembalikan hasil mutation pertama. Status pembayaran sale diturunkan ulang dari pembayaran, jatuh tempo, dan tanggal server Asia/Jakarta saat dibaca. Browser tetap tidak menulis tabel public secara langsung. Provisioning Supabase, UI bisnis, pembayaran lanjutan, rate limiting, monitoring, dan deployment berada di luar ticket ini.
+Fase 2 menyediakan server actions di `src/app/actions/f2.ts`; semua read/mutation melewati guard owner dan mengembalikan union result typed (`validation`, `unauthorized`, `not_found`, `conflict`, atau `retryable`). Setiap mutasi pelanggan dan penjualan wajib membawa UUID `idempotencyKey`; retry mengembalikan hasil mutation pertama. Status pembayaran sale diturunkan ulang dari pembayaran, jatuh tempo, dan tanggal server Asia/Jakarta saat dibaca. Browser tetap tidak menulis tabel public secara langsung. Halaman `/dashboard`, `/pelanggan`, `/pelanggan/[id]`, `/penjualan`, `/penjualan/baru`, dan `/penjualan/[id]` sudah tersedia beserta state loading, empty, error, dan not-found. Provisioning Supabase, pembayaran lanjutan, pengiriman, peti, pengeluaran, struk, laporan, rate limiting, monitoring, dan deployment belum termasuk.
 
 ## Dokumentasi produk
 

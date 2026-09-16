@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 140" width="560" height="140" role="img" aria-labelledby="am-lockup-h-title">
+  <title id="am-lockup-h-title">Azzam Mitra, Distributor Telur</title>
+  <!-- Mark dan telur memakai ruang koordinat 120 asli. Teks memakai Constantia dengan fallback Georgia. -->
+  <g transform="translate(10 10)">
+    <g fill="none" stroke="#24462C" stroke-width="13" stroke-linecap="butt" stroke-linejoin="round">
+      <path d="M22 101 60 33 98 101"/>
+      <path d="M41 79H79" stroke-width="11"/>
+    </g>
+    <path d="M60 46.5C66.82 48.66 71 64.05 71 62.16C71 69.72 66.6 73.5 60 73.5C53.4 73.5 49 69.72 49 62.16C49 64.05 53.18 48.66 60 46.5Z" fill="#D89B35"/>
+  </g>
+  <text x="152" y="82" font-family="Constantia, Georgia, serif" font-size="44" font-weight="700" letter-spacing="1.6" fill="#24462C">AZZAM MITRA</text>
+  <text x="154" y="107" font-family="Bahnschrift, Segoe UI, Arial, sans-serif" font-size="13" letter-spacing="4.4" fill="#526E57">DISTRIBUTOR TELUR</text>
+</svg>

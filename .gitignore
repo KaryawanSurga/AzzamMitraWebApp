@@ -16,6 +16,9 @@
 .vercel/
 .sentryclirc
 
+# local agent worktrees and orchestration state
+.sokudo/
+
 # OS and editor artifacts
 .DS_Store
 Thumbs.db
