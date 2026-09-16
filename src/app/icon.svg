@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="Azzam Mitra">
+  <!-- Favicon aplikasi. Geometri mark sama, berat garis dinaikkan untuk ukuran 16 sampai 32 px. -->
+  <rect width="32" height="32" rx="7" fill="#24462C"/>
+  <g transform="translate(4 4) scale(0.2)">
+    <g fill="none" stroke="#F6F4EE" stroke-width="16" stroke-linecap="butt" stroke-linejoin="round">
+      <path d="M22 101 60 33 98 101"/>
+      <path d="M41 79H79" stroke-width="14"/>
+    </g>
+    <path d="M60 46.5C66.82 48.66 71 64.05 71 62.16C71 69.72 66.6 73.5 60 73.5C53.4 73.5 49 69.72 49 62.16C49 64.05 53.18 48.66 60 46.5Z" fill="#D89B35"/>
+  </g>
+</svg>
