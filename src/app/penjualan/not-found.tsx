@@ -1,0 +1,1 @@
+import Link from "next/link"; export default function NotFound() { return <main className="standalone-state"><h1>Penjualan tidak ditemukan</h1><p>Invoice mungkin tidak tersedia atau alamat tidak valid.</p><Link className="button" href="/penjualan">Kembali ke penjualan</Link></main>; }

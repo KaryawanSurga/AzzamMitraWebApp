@@ -1,6 +1,6 @@
 import "server-only";
 import type { OwnerProfile } from "@/lib/auth/owner";
-import type { CustomerRecord, SaleMutationInput, SaleRecord, calculateSale } from "@/domain/sales";
+import type { CustomerRecord, SaleDetail, SaleListItem, SaleMutationInput, SaleRecord, calculateSale } from "@/domain/sales";
 
 export type { CustomerRecord, SaleRecord } from "@/domain/sales";
 
@@ -15,6 +15,8 @@ export interface F2Repository {
   getCustomer(id: string): Promise<CustomerRecord | null>;
   findSaleByIdempotencyKey(key: string, today: string): Promise<SaleRecord | null>;
   createSaleAtomic(input: SaleMutationInput, calculated: CalculatedSale, actor: OwnerProfile): Promise<SaleRecord>;
+  listSales(input: { query: string; limit: number; offset: number }, today: string): Promise<SaleListItem[]>;
+  getSale(id: string, today: string): Promise<SaleDetail | null>;
 }
 
 export class RepositoryConflictError extends Error {}

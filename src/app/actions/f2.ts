@@ -13,3 +13,5 @@ export async function archiveCustomerAction(input: unknown) { return service().a
 export async function listCustomersAction(input: unknown) { return service().listCustomers(input, await getCurrentOwner()); }
 export async function getCustomerAction(input: unknown) { return service().getCustomer(input, await getCurrentOwner()); }
 export async function createSaleAction(input: unknown) { return service().createSale(input, await getCurrentOwner()); }
+export async function listSalesAction(input: unknown) { return service().listSales(input, await getCurrentOwner()); }
+export async function getSaleAction(input: unknown) { return service().getSale(input, await getCurrentOwner()); }

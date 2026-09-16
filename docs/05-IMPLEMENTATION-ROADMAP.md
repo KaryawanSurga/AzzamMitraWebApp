@@ -14,4 +14,4 @@ Roadmap ini membagi implementasi menjadi fase yang memiliki batas dan exit crite
 
 Status F1 tetap **Dalam proses** sampai acceptance test/UAT lingkungan Supabase selesai; repository hanya menyediakan implementasi dan pengujian lokal tanpa provisioning cloud.
 
-Backend F2 telah menyediakan kontrak Zod, kalkulasi presisi, service/repository transaksional, server actions typed, idempotensi seluruh mutasi pelanggan dan penjualan, serta integration test PostgreSQL in-memory. Status tetap **Dalam proses** karena halaman UI dan UAT-01 sampai UAT-03 pada lingkungan nyata belum dilaksanakan.
+F2 kini menyediakan kontrak Zod, kalkulasi presisi, service/repository transaksional, server actions typed, idempotensi seluruh mutasi, serta UI responsif untuk pelanggan dan penjualan. Pengujian lokal mencakup kalkulasi per peti/per kg, pilihan lunas/DP/utang, validasi, retry/double-submit, draft lokal, CRUD/arsip pelanggan, dan state utama. Status tetap **Dalam proses** sampai UAT-01 sampai UAT-03 dijalankan pada lingkungan Supabase nyata; cetak struk tetap bagian F5.

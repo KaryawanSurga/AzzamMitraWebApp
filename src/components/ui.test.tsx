@@ -1,0 +1,3 @@
+import { render, screen } from "@testing-library/react";
+import { EmptyState, ErrorState, PaymentBadge } from "./ui";
+describe("UI states", () => { it("merender empty, unauthorized, dan status pembayaran", () => { const { rerender } = render(<EmptyState title="Belum ada pelanggan" detail="Tambah data"/>); expect(screen.getByText("Belum ada pelanggan")).toBeInTheDocument(); rerender(<ErrorState code="unauthorized" message="Sesi berakhir"/>); expect(screen.getByRole("link", { name: "Masuk kembali" })).toHaveAttribute("href", "/login?next=/dashboard"); rerender(<PaymentBadge status="overdue"/>); expect(screen.getByText("Terlambat")).toBeInTheDocument(); }); });

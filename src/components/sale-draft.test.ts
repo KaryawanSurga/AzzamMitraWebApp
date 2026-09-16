@@ -1,0 +1,2 @@
+import { decodeSaleDraft, encodeSaleDraft, SALE_DRAFT_TTL_MS } from "./sale-draft";
+describe("sale draft", () => { it("memulihkan draft valid dan menolak yang kedaluwarsa atau rusak", () => { const raw = encodeSaleDraft({ customerId: "abc" }, 100); expect(decodeSaleDraft(raw, 100)).toEqual({ customerId: "abc" }); expect(decodeSaleDraft(raw, 100 + SALE_DRAFT_TTL_MS + 1)).toBeNull(); expect(decodeSaleDraft("rusak")).toBeNull(); }); });

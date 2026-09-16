@@ -1,5 +1,5 @@
 import "server-only";
-import { customerArchiveSchema, customerCreateSchema, customerIdSchema, customerListSchema, customerUpdateSchema, saleMutationSchema, calculateSale, jakartaDate, validateTransactionDate } from "@/domain/sales";
+import { customerArchiveSchema, customerCreateSchema, customerIdSchema, customerListSchema, customerUpdateSchema, saleIdSchema, saleListSchema, saleMutationSchema, calculateSale, jakartaDate, validateTransactionDate } from "@/domain/sales";
 import type { OwnerProfile } from "@/lib/auth/owner";
 import type { AppResult } from "@/server/result";
 import { unauthorizedResult } from "@/server/result";
@@ -32,4 +32,6 @@ export class F2Service {
       return failure(error);
     }
   }
+  async listSales(raw: unknown, owner: OwnerProfile | null) { if (!owner) return unauthorizedResult(); const parsed = saleListSchema.safeParse(raw); if (!parsed.success) return validation(parsed.error); try { return { ok: true as const, data: await this.repository.listSales(parsed.data, jakartaDate(this.now())) }; } catch { return { ok: false as const, error: { code: "retryable" as const, message: "Daftar penjualan belum dapat dimuat. Silakan coba lagi." } }; } }
+  async getSale(raw: unknown, owner: OwnerProfile | null) { if (!owner) return unauthorizedResult(); const parsed = saleIdSchema.safeParse(raw); if (!parsed.success) return validation(parsed.error); try { const data = await this.repository.getSale(parsed.data.id, jakartaDate(this.now())); return data ? { ok: true as const, data } : { ok: false as const, error: { code: "not_found" as const, message: "Penjualan tidak ditemukan." } }; } catch { return { ok: false as const, error: { code: "retryable" as const, message: "Detail penjualan belum dapat dimuat. Silakan coba lagi." } }; } }
 }

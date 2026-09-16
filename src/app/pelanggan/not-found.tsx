@@ -1,0 +1,1 @@
+import Link from "next/link"; export default function NotFound() { return <main className="standalone-state"><h1>Pelanggan tidak ditemukan</h1><p>Data mungkin sudah berubah atau alamat tidak valid.</p><Link className="button" href="/pelanggan">Kembali ke pelanggan</Link></main>; }

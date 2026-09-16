@@ -17,6 +17,8 @@ class FakeRepository implements F2Repository {
   async getCustomer(id: string): Promise<CustomerRecord | null> { return this.customers.find((item) => item.id === id) ?? null; }
   async findSaleByIdempotencyKey(key: string, today: string): Promise<SaleRecord | null> { const record = this.sales.get(key); return record ? { ...record, paymentStatus: derivePaymentStatus(record.remainingRupiah, record.paidRupiah, record.dueDate, today) } : null; }
   async createSaleAtomic(input: SaleMutationInput, calculated: CalculatedSale): Promise<SaleRecord> { this.createSaleCalls++; if (this.failSale) throw new RepositoryUnavailableError(); const record: SaleRecord = { id: crypto.randomUUID(), invoiceNumber: "INV-1", idempotencyKey: input.idempotencyKey, totalRupiah: calculated.totalRupiah, paidRupiah: calculated.paidRupiah, remainingRupiah: calculated.remainingRupiah, dueDate: input.dueDate ?? null, paymentStatus: calculated.paymentStatus, status: input.status }; this.sales.set(input.idempotencyKey, record); return record; }
+  async listSales() { return []; }
+  async getSale() { return null; }
 }
 
 describe("F2Service", () => {
