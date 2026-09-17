@@ -25,7 +25,11 @@ export default async function SaleDetailPage({ params, searchParams }: { params:
       <main className="page">
         {!result.ok ? <ErrorState {...result.error} retryHref={`/penjualan/${id}`}/> : <>
           {created && <p className="notice success" role="status">Penjualan berhasil disimpan.</p>}
-          <PageHeader title={result.data.invoiceNumber} description={`${result.data.customerName} · ${result.data.transactionDate}`} action={<PaymentBadge status={result.data.paymentStatus}/>}/>
+          <PageHeader
+            title={result.data.invoiceNumber}
+            description={`${result.data.customerName} · ${result.data.transactionDate}`}
+            action={<div className="invoice-actions"><PaymentBadge status={result.data.paymentStatus}/><Link className="button-secondary" href={`/penjualan/${id}/struk`}>Buka struk</Link></div>}
+          />
           <section className="invoice-grid">
             <div className="invoice-main">
               <h2>Item</h2>
