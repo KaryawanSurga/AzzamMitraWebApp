@@ -73,7 +73,7 @@ When koneksi putus saat form terisi, then input tetap ada, kegagalan jelas, retr
 ## Cakupan otomatis saat ini
 
 - UAT-01..09: invarian domain, service, dan repository teruji lokal (Vitest + PGlite); eksekusi manual pada environment UAT tetap wajib.
-- UAT-10: kontrak domain koreksi/pembatalan, service, komponen, dan integrasi repository PGlite termasuk audit before/after.
+- UAT-10: kontrak domain koreksi/pembatalan, service, komponen, integrasi repository PGlite, dan acceptance pada Supabase lokal (`npm run uat:db`) termasuk audit before/after serta verifikasi UI dashboard/laporan/detail invoice/struk/CSV.
 - UAT-11: `validateTransactionDate` untuk batas satu tahun dan penolakan tanggal masa depan, termasuk di service F3.
 - UAT-12: skema draft dengan versi dan masa berlaku, pemulihan draft, pembersihan setelah sukses, dan idempotensi mutasi.
-- Backup/restore: script dengan guard teruji; validasi dump/restore pada PostgreSQL nyata belum dijalankan.
+- Backup/restore: script dengan guard teruji; dump/restore tervalidasi pada Supabase lokal via container dengan jumlah baris identik di 11 tabel aplikasi (2026-09-18). Validasi pada database deployment tetap wajib sebelum produksi.

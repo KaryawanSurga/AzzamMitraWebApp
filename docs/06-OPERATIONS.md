@@ -25,6 +25,28 @@ Validasi restore (wajib sebelum rilis besar):
 3. Bandingkan jumlah baris tabel inti (`sales`, `payments`, `expenses`, `crate_movements`, `audit_events`) dengan sumber.
 4. Buka `/laporan` pada periode contoh dan pastikan angka sama dengan sumber.
 
+### Supabase lokal tanpa pg_dump di host
+
+Jika PostgreSQL client tidak terpasang di host, jalankan dump/restore lewat container:
+
+```bash
+MSYS_NO_PATHCONV=1 docker exec supabase_db_Azzam_Mitra_Webapp pg_dump -U postgres -d postgres -Fc --no-owner -f /tmp/azzam.dump
+docker cp supabase_db_Azzam_Mitra_Webapp:/tmp/azzam.dump backups/azzam-mitra-lokal.dump
+MSYS_NO_PATHCONV=1 docker exec supabase_db_Azzam_Mitra_Webapp psql -U postgres -c "create database azzam_restore_check"
+MSYS_NO_PATHCONV=1 docker exec supabase_db_Azzam_Mitra_Webapp pg_restore -U postgres -d azzam_restore_check --no-owner --no-privileges /tmp/azzam.dump
+MSYS_NO_PATHCONV=1 docker exec supabase_db_Azzam_Mitra_Webapp psql -U postgres -c "drop database azzam_restore_check"
+```
+
+Hasil validasi 2026-09-18 pada Supabase lokal: seluruh 11 tabel aplikasi memiliki jumlah baris identik antara sumber dan hasil restore (users 1, customers 4, sales 4, sale_items 4, payments 5, deliveries 1, crate_movements 5, expenses 2, capital_movements 2, adjustments 4, audit_events 21). Peringatan restore hanya pada skema internal Supabase (`vault.secrets`), bukan tabel aplikasi.
+
+## Acceptance database nyata
+
+```bash
+npm run uat:db
+```
+
+Menjalankan alur penjualan, koreksi, pembatalan, riwayat audit, dan pelaporan terhadap `DATABASE_URL` nyata. Test di-skip pada `npm test` biasa dan pada CI tanpa database UAT. Tanggal 2026-09-18 alur ini lulus pada Supabase lokal, dan halaman `/dashboard`, `/laporan`, detail invoice (aktif dan batal), struk, serta ekspor CSV diverifikasi lewat sesi owner.
+
 ## Checklist rilis
 
 1. `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` hijau di commit yang akan dirilis.

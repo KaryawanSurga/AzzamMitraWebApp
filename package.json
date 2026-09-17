@@ -18,7 +18,8 @@
     "db:migrate": "node --env-file-if-exists=.env.local ./node_modules/drizzle-kit/bin.cjs migrate",
     "db:studio": "node --env-file-if-exists=.env.local ./node_modules/drizzle-kit/bin.cjs studio",
     "db:backup": "node --env-file-if-exists=.env.local scripts/backup.mjs",
-    "db:restore": "node --env-file-if-exists=.env.local scripts/restore.mjs"
+    "db:restore": "node --env-file-if-exists=.env.local scripts/restore.mjs",
+    "uat:db": "node --env-file-if-exists=.env.local ./node_modules/vitest/vitest.mjs run src/server/f2/real-database.acceptance.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
