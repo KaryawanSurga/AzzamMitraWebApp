@@ -57,6 +57,10 @@ Menjalankan alur penjualan, koreksi, pembatalan, riwayat audit, dan pelaporan te
 6. Tandai rilis dengan tag `vX.Y.Z`; workflow `release.yml` membuat GitHub Release setelah seluruh quality gate lulus.
 7. Catat perubahan pada deskripsi rilis dan tautkan ke dokumentasi terkait.
 
+## Riwayat rilis
+
+- `v0.1.0` (2026-09-18): rilis pertama F0-F6. Workflow Release menjalankan lint, typecheck, test, dan build di runner lalu membuat GitHub Release otomatis. Validasi lokal: UAT-09/UAT-10, restore PostgreSQL, dan smoke test UI lulus.
+
 ## Monitoring dan observability
 
 - `src/server/observability.ts` menulis log terstruktur JSON dan membuang field sensitif (password, token, secret, cookie).
