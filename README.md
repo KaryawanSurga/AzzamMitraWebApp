@@ -61,6 +61,8 @@ npm run build        # production build
 npm run db:generate  # generate migration dari schema Drizzle
 npm run db:migrate   # apply migration (memerlukan DATABASE_URL)
 npm run db:studio    # buka Drizzle Studio (memerlukan DATABASE_URL)
+npm run db:backup    # dump database ke backups/ (memerlukan pg_dump)
+npm run db:restore   # restore dump (memerlukan CONFIRM_RESTORE=yes)
 ```
 
 Perintah Drizzle membaca `.env.local` melalui `node --env-file-if-exists`. Migration tidak pernah dijalankan otomatis saat aplikasi dimulai.
@@ -77,8 +79,10 @@ Perintah Drizzle membaca `.env.local` melalui `node --env-file-if-exists`. Migra
 - `src/server/f3` — service dan repository pembayaran/pengiriman/peti.
 - `src/server/f4` — service dan repository pengeluaran/modal/prive.
 - `src/server/f5` — service dan repository dashboard/laporan.
+- `src/server/rate-limit.ts` dan `src/server/observability.ts` — pembatas mutasi/login dan log server terstruktur.
+- `scripts` — backup/restore database (`db:backup`, `db:restore`).
 - `src/test` — setup test bersama dan penerapan migration nyata ke PGlite.
-- `docs` — PRD, workflow, spesifikasi teknis, dan UAT sebagai source of truth.
+- `docs` — PRD, workflow, spesifikasi teknis, UAT, roadmap, dan operasional sebagai source of truth.
 - `brand` — brand kit Azzam Mitra: board, logo SVG, dan sumbernya. Token warna dan tipografi dipakai langsung oleh `src/app/globals.css`.
 
 `npm run db:generate` hanya membandingkan file schema dengan snapshot Drizzle dan tidak membuka koneksi database. Periksa SQL di `drizzle/` sebelum menjalankan `npm run db:migrate` pada database yang dituju. Baseline migration F1 mengaktifkan RLS pada seluruh 11 tabel aplikasi tanpa policy client, sehingga role `anon`/`authenticated` ditolak secara default. Backend tepercaya tetap dapat bekerja melalui koneksi PostgreSQL atau service role. Migration tidak dijalankan otomatis dan repository tidak memuat secret.
@@ -90,6 +94,8 @@ Fase 3 menambahkan server actions di `src/app/actions/f3.ts` untuk pembayaran be
 Fase 4 menambahkan kontrak, migration, repository transaksional, server actions, dan UI untuk pengeluaran serta modal/prive. Route `/pengeluaran` menyediakan filter periode dan route `/pengeluaran/baru` mencatat biaya usaha; route `/pengaturan` memisahkan modal masuk dan prive dari pendapatan/biaya. Mutasi F4 bersifat idempoten dan menulis audit event dalam transaksi yang sama. Bukti pengeluaran sengaja belum diunggah sampai bucket privat, retensi, dan kebijakan akses ditetapkan; kolom `evidence_path` tetap disiapkan. UAT-07 dan UAT-08 telah dijalankan pada Supabase lokal, sedangkan acceptance deployment/cloud masih pending.
 
 Fase 5 menyediakan dashboard arus operasi responsif di `/dashboard`: pembayaran pelanggan sebagai uang masuk, pengeluaran usaha, arus kas operasi 7/30/90 hari, ringkasan penjualan/piutang/estimasi laba, serta daftar tindakan harian (jatuh tempo, pengiriman tertunda, peti belum kembali). Halaman `/laporan` menyajikan laporan periode lengkap dengan filter tanggal dan ekspor CSV dari formula yang sama, sedangkan `/penjualan/[id]/struk` mencetak struk A4 atau thermal 80 mm. Modal masuk dan prive tidak masuk metrik operasional. UAT-09 tervalidasi lokal lewat pengujian integrasi service + repository; acceptance pada Supabase cloud/deployment masih pending.
+
+Fase 6 menyediakan koreksi immutable: invoice terkonfirmasi dapat dikoreksi atau dibatalkan dengan alasan wajib, nomor invoice tidak dipakai ulang, dan setiap mutasi menulis `adjustments` serta audit `before`/`after` dalam transaksi yang sama. Detail invoice menampilkan riwayat koreksi dan jejak audit; invoice batal dikeluarkan dari omzet, uang masuk, dan piutang. Ditambahkan pula rate limit login/mutasi, log server terstruktur dengan redaksi data sensitif, header keamanan dasar, script backup/restore dengan guard, workflow rilis berbasis tag, serta dokumen [operasional](./docs/06-OPERATIONS.md). UAT-10 tervalidasi lokal lewat pengujian domain, service, komponen, dan integrasi PGlite; UAT-11 (backdate) dan UAT-12 (draft/retry) sudah tercakup pengujian F2/F3. Acceptance cloud dan validasi backup/restore pada PostgreSQL nyata masih pending.
 
 ## Dokumentasi produk
 

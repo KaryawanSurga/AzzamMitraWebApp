@@ -8,6 +8,8 @@ Webapp adalah buku operasional internal distributor telur untuk satu owner yang 
 2. [Sitemap dan workflows](./02-SITEMAP-WORKFLOWS.md)
 3. [Technical specification](./03-TECHNICAL-SPEC.md)
 4. [UAT](./04-UAT.md)
+5. [Roadmap implementasi](./05-IMPLEMENTATION-ROADMAP.md)
+6. [Operasional, backup, dan rilis](./06-OPERATIONS.md)
 
 ## Keputusan baseline
 

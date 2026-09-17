@@ -69,3 +69,11 @@ When koneksi putus saat form terisi, then input tetap ada, kegagalan jelas, retr
 - Seluruh skenario inti lulus.
 - Tidak ada defect critical/high.
 - Build production, backup/restore, autentikasi, audit, dan monitoring telah diverifikasi.
+
+## Cakupan otomatis saat ini
+
+- UAT-01..09: invarian domain, service, dan repository teruji lokal (Vitest + PGlite); eksekusi manual pada environment UAT tetap wajib.
+- UAT-10: kontrak domain koreksi/pembatalan, service, komponen, dan integrasi repository PGlite termasuk audit before/after.
+- UAT-11: `validateTransactionDate` untuk batas satu tahun dan penolakan tanggal masa depan, termasuk di service F3.
+- UAT-12: skema draft dengan versi dan masa berlaku, pemulihan draft, pembersihan setelah sukses, dan idempotensi mutasi.
+- Backup/restore: script dengan guard teruji; validasi dump/restore pada PostgreSQL nyata belum dijalankan.
