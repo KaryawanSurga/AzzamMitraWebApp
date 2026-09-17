@@ -43,6 +43,13 @@
       "when": 1789579054082,
       "tag": "0005_fat_venom",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789670021056,
+      "tag": "0006_great_colossus",
+      "breakpoints": true
     }
   ]
 }
