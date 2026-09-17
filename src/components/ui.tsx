@@ -1,23 +1,13 @@
 import Link from "next/link";
 import { milliToQuantity, quantityToMilli } from "@/domain/contracts";
-import type { CapitalMovementType, ExpenseCategory } from "@/domain/finance";
+import { expenseCategoryLabels, type CapitalMovementType } from "@/domain/finance";
 import type { AppErrorCode } from "@/server/result";
 
 export const rupiah = (value: number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(value);
 export const paymentLabels = { paid: "Lunas", partial: "Sebagian", unpaid: "Belum dibayar", due: "Jatuh tempo", overdue: "Terlambat" } as const;
 export const deliveryLabels = { unprocessed: "Belum diproses", preparing: "Disiapkan", ready: "Siap diantar", in_transit: "Dalam perjalanan", partially_delivered: "Diantar sebagian", received: "Diterima", failed: "Gagal", cancelled: "Dibatalkan" } as const;
 export const movementLabels = { out: "Peti keluar", return: "Peti kembali", adjustment: "Penyesuaian" } as const;
-export const expenseCategoryLabels: Record<ExpenseCategory, string> = {
-  egg_purchase: "Pembelian telur",
-  delivery: "Transportasi / pengiriman",
-  fuel_toll_parking: "BBM, tol, dan parkir",
-  loading: "Bongkar muat",
-  wages: "Upah",
-  packaging_crates: "Kemasan / peti",
-  maintenance: "Perawatan",
-  rent_utilities_operations: "Sewa, listrik, dan operasional",
-  other: "Lainnya",
-};
+export { expenseCategoryLabels };
 export const capitalMovementLabels: Record<CapitalMovementType, string> = {
   capital_in: "Modal masuk",
   owner_draw: "Prive / pengambilan pribadi",

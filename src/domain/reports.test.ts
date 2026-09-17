@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { aggregateDashboardCashflow, dashboardDateRange, dashboardQuerySchema } from "./reports";
+import {
+  aggregateDashboardCashflow,
+  buildDashboardActions,
+  buildPeriodReport,
+  dashboardDateRange,
+  dashboardQuerySchema,
+  periodReportCsv,
+  reportDateRange,
+  reportQuerySchema,
+} from "./reports";
 
 describe("dashboard reporting domain", () => {
   const now = new Date("2026-09-17T10:00:00+07:00");
@@ -10,7 +19,7 @@ describe("dashboard reporting domain", () => {
     expect(dashboardQuerySchema.safeParse({ days: "14" }).success).toBe(false);
   });
 
-  it("membangun rentang inklusif menurut zona Asia Jakarta", () => {
+  it("membangun rentang dashboard inklusif menurut zona Asia Jakarta", () => {
     const range = dashboardDateRange(7, now);
     expect(range.from).toBe("2026-09-11");
     expect(range.to).toBe("2026-09-17");
@@ -40,5 +49,66 @@ describe("dashboard reporting domain", () => {
     expect(result.totalIncomeRupiah).toBe(1_000_000);
     expect(result.totalExpenseRupiah).toBe(250_000);
     expect(result.netCashflowRupiah).toBe(750_000);
+  });
+});
+
+describe("period report domain", () => {
+  const now = new Date("2026-09-17T10:00:00+07:00");
+
+  it("memakai bulan berjalan sebagai rentang bawaan dan memvalidasi urutan tanggal", () => {
+    expect(reportDateRange({}, now)).toMatchObject({ from: "2026-09-01", to: "2026-09-17" });
+    expect(reportQuerySchema.safeParse({ from: "2026-09-17", to: "2026-09-01" }).success).toBe(false);
+    expect(reportQuerySchema.safeParse({ from: "2026-02-30", to: "2026-09-01" }).success).toBe(false);
+  });
+
+  it("menghitung semua metrik dari sumber yang tepat", () => {
+    const report = buildPeriodReport(
+      { from: "2026-09-01", to: "2026-09-17" },
+      [{ id: "sale-1", reference: "INV-001", customerName: "Budi", amountRupiah: 1_500_000, occurredAt: "2026-09-16T02:00:00Z" }],
+      [{ reference: "PAY-001", invoiceNumber: "INV-001", customerName: "Budi", amountRupiah: 1_000_000, occurredAt: "2026-09-16T03:00:00Z" }],
+      [{ reference: "EXP-001", category: "egg_purchase", notes: "Belanja kandang", amountRupiah: 400_000, occurredAt: "2026-09-16T04:00:00Z" }],
+      [{ saleId: "sale-1", invoiceNumber: "INV-001", customerName: "Budi", dueDate: "2026-09-17", outstandingRupiah: 500_000 }],
+    );
+
+    expect(report).toMatchObject({
+      totalSalesRupiah: 1_500_000,
+      totalIncomeRupiah: 1_000_000,
+      totalExpenseRupiah: 400_000,
+      netCashflowRupiah: 600_000,
+      totalReceivablesRupiah: 500_000,
+      otherIncomeRupiah: 0,
+      estimatedNetProfitRupiah: 1_100_000,
+    });
+    expect(report.rows).toHaveLength(3);
+    expect(report.rows.find(({ type }) => type === "expense")?.description).toContain("Pembelian telur");
+  });
+
+  it("memisahkan tindakan terlambat, jatuh tempo, pengiriman, dan peti", () => {
+    const result = buildDashboardActions(
+      [
+        { saleId: "sale-1", invoiceNumber: "INV-001", customerName: "Budi", dueDate: "2026-09-16", outstandingRupiah: 500_000 },
+        { saleId: "sale-2", invoiceNumber: "INV-002", customerName: "Tania", dueDate: "2026-09-17", outstandingRupiah: 250_000 },
+      ],
+      [{ saleId: "sale-1", invoiceNumber: "INV-001", customerName: "Budi", outstandingCrateMilli: 4_000 }],
+      [{ customerId: "customer-1", customerName: "Budi", balanceMilli: 3_000 }],
+      "2026-09-17",
+    );
+
+    expect(result.actionCounts).toEqual({ overdue: 1, due: 1, delivery: 1, crate: 1 });
+    expect(result.actions.map(({ kind }) => kind)).toEqual(["overdue", "due", "delivery", "crate"]);
+  });
+
+  it("menghasilkan CSV dengan ringkasan dan rincian dari laporan yang sama", () => {
+    const report = buildPeriodReport(
+      { from: "2026-09-01", to: "2026-09-17" },
+      [{ id: "sale-1", reference: "INV-001", customerName: "Budi, Sentosa", amountRupiah: 1_500_000, occurredAt: "2026-09-16T02:00:00Z" }],
+      [],
+      [],
+      [],
+    );
+    const csv = periodReportCsv(report);
+    expect(csv).toContain('"Penjualan bersih","1500000"');
+    expect(csv).toContain('"Budi, Sentosa"');
+    expect(csv).toContain('"Estimasi laba bersih","1500000"');
   });
 });

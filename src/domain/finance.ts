@@ -5,6 +5,17 @@ export const expenseCategories = ["egg_purchase", "delivery", "fuel_toll_parking
 export const capitalMovementTypes = ["capital_in", "owner_draw"] as const;
 export type ExpenseCategory = (typeof expenseCategories)[number];
 export type CapitalMovementType = (typeof capitalMovementTypes)[number];
+export const expenseCategoryLabels: Record<ExpenseCategory, string> = {
+  egg_purchase: "Pembelian telur",
+  delivery: "Transportasi / pengiriman",
+  fuel_toll_parking: "BBM, tol, dan parkir",
+  loading: "Bongkar muat",
+  wages: "Upah",
+  packaging_crates: "Kemasan / peti",
+  maintenance: "Perawatan",
+  rent_utilities_operations: "Sewa, listrik, dan operasional",
+  other: "Lainnya",
+};
 
 const occurredAtSchema = z.iso.datetime({ offset: true, error: "Waktu transaksi harus berupa tanggal dan waktu ISO 8601 dengan zona waktu." });
 
