@@ -1,6 +1,6 @@
 # Azzam Mitra Webapp
 
-Fondasi Fase 1 serta implementasi operasional Fase 2–4 Azzam Mitra: autentikasi owner, pelanggan, penjualan, pembayaran, pengiriman, peti, pengeluaran, modal, dan prive dengan UI responsif.
+Fondasi Fase 1 serta implementasi operasional Fase 2–5 Azzam Mitra: autentikasi owner, pelanggan, penjualan, pembayaran, pengiriman, peti, pengeluaran, modal/prive, dan dashboard arus operasi dengan UI responsif.
 
 ## Prasyarat
 
@@ -76,6 +76,7 @@ Perintah Drizzle membaca `.env.local` melalui `node --env-file-if-exists`. Migra
 - `src/server/f2` — service dan repository pelanggan/penjualan.
 - `src/server/f3` — service dan repository pembayaran/pengiriman/peti.
 - `src/server/f4` — service dan repository pengeluaran/modal/prive.
+- `src/server/f5` — service dan repository dashboard/laporan.
 - `src/test` — setup test bersama dan penerapan migration nyata ke PGlite.
 - `docs` — PRD, workflow, spesifikasi teknis, dan UAT sebagai source of truth.
 - `brand` — brand kit Azzam Mitra: board, logo SVG, dan sumbernya. Token warna dan tipografi dipakai langsung oleh `src/app/globals.css`.
@@ -87,6 +88,8 @@ Fase 2 menyediakan server actions di `src/app/actions/f2.ts`; semua read/mutatio
 Fase 3 menambahkan server actions di `src/app/actions/f3.ts` untuk pembayaran bertahap, pengiriman parsial, dan peti, dengan halaman `/peti` serta bagian pembayaran dan pengiriman pada detail invoice. Invariant yang dijaga server: pembayaran tidak melebihi sisa piutang, status pembayaran dihitung dari agregat pembayaran, penerimaan tidak melebihi rencana pengiriman, rencana pengiriman tidak melebihi peti pada penjualan, dan pengembalian peti tidak melebihi saldo pelanggan. Peti keluar dicatat saat penjualan dikonfirmasi. Setiap mutasi F3 membawa `idempotencyKey` yang dijaga unique index.
 
 Fase 4 menambahkan kontrak, migration, repository transaksional, server actions, dan UI untuk pengeluaran serta modal/prive. Route `/pengeluaran` menyediakan filter periode dan route `/pengeluaran/baru` mencatat biaya usaha; route `/pengaturan` memisahkan modal masuk dan prive dari pendapatan/biaya. Mutasi F4 bersifat idempoten dan menulis audit event dalam transaksi yang sama. Bukti pengeluaran sengaja belum diunggah sampai bucket privat, retensi, dan kebijakan akses ditetapkan; kolom `evidence_path` tetap disiapkan. UAT-07 dan UAT-08 telah dijalankan pada Supabase lokal, sedangkan acceptance deployment/cloud masih pending.
+
+Fase 5 dimulai dengan dashboard arus operasi responsif di `/dashboard`. Ringkasan dan grafik harian memakai pembayaran pelanggan sebagai uang masuk, membandingkannya dengan pengeluaran usaha, lalu menghitung arus kas operasi untuk periode 7/30/90 hari. Modal masuk dan prive tidak masuk metrik operasional. Struk, laporan lengkap, ekspor CSV, dan tindakan operasional masih menjadi pekerjaan F5 berikutnya.
 
 ## Dokumentasi produk
 
