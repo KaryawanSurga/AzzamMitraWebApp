@@ -2,9 +2,12 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import { periodReportCsv } from "@/domain/reports";
 import * as schema from "@/db/schema";
+import type { OwnerProfile } from "@/lib/auth/owner";
 import { applySchema } from "@/test/migrate";
 import { DrizzleF5Repository } from "./drizzle-repository";
+import { F5Service } from "./service";
 
 describe("DrizzleF5Repository with PostgreSQL adapter", () => {
   let client: PGlite;
@@ -73,5 +76,36 @@ describe("DrizzleF5Repository with PostgreSQL adapter", () => {
     ]);
     expect(undelivered).toEqual([expect.objectContaining({ invoiceNumber: "INV-REPORT", outstandingCrateMilli: 4_000 })]);
     expect(crates).toEqual([expect.objectContaining({ customerName: "Budi", balanceMilli: 4_000 })]);
+  });
+
+  it("UAT-09: laporan periode dari transaksi campuran tanpa modal atau metrik stok", async () => {
+    const owner: OwnerProfile = {
+      id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      email: "owner@example.com",
+      display_name: "Owner",
+    };
+    const service = new F5Service(repository, () => new Date("2026-09-18T10:00:00+07:00"));
+    const result = await service.getPeriodReport({ from: "2026-09-01", to: "2026-09-17" }, owner);
+    if (!result.ok) throw new Error("laporan periode seharusnya berhasil");
+
+    expect(result.data).toMatchObject({
+      from: "2026-09-01",
+      to: "2026-09-17",
+      totalSalesRupiah: 1_500_000,
+      totalIncomeRupiah: 1_000_000,
+      totalExpenseRupiah: 200_000,
+      netCashflowRupiah: 800_000,
+      totalReceivablesRupiah: 500_000,
+      otherIncomeRupiah: 0,
+      estimatedNetProfitRupiah: 1_300_000,
+    });
+    expect(result.data.rows.map(({ type }) => type).sort()).toEqual(["expense", "expense", "payment", "payment", "sale"]);
+
+    const csv = periodReportCsv(result.data);
+    expect(csv).toContain('"Penjualan bersih","1500000"');
+    expect(csv).toContain('"Uang masuk","1000000"');
+    expect(csv).toContain('"Pengeluaran","200000"');
+    expect(csv).toContain('"Estimasi laba bersih","1300000"');
+    expect(csv).not.toContain("2000000");
   });
 });
