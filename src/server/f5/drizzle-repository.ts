@@ -45,7 +45,7 @@ export class DrizzleF5Repository implements F5Repository {
         .from(schema.payments)
         .innerJoin(schema.sales, eq(schema.payments.saleId, schema.sales.id))
         .innerJoin(schema.customers, eq(schema.sales.customerId, schema.customers.id))
-        .where(between(schema.payments.paidAt, from, to))
+        .where(and(inArray(schema.sales.status, reportableSaleStatuses), between(schema.payments.paidAt, from, to)))
         .orderBy(asc(schema.payments.paidAt));
       return rows.map((row) => ({ ...row, occurredAt: row.occurredAt.toISOString() }));
     } catch (error) {

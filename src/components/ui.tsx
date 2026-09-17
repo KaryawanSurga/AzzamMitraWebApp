@@ -7,6 +7,12 @@ export const rupiah = (value: number) => new Intl.NumberFormat("id-ID", { style:
 export const paymentLabels = { paid: "Lunas", partial: "Sebagian", unpaid: "Belum dibayar", due: "Jatuh tempo", overdue: "Terlambat" } as const;
 export const deliveryLabels = { unprocessed: "Belum diproses", preparing: "Disiapkan", ready: "Siap diantar", in_transit: "Dalam perjalanan", partially_delivered: "Diantar sebagian", received: "Diterima", failed: "Gagal", cancelled: "Dibatalkan" } as const;
 export const movementLabels = { out: "Peti keluar", return: "Peti kembali", adjustment: "Penyesuaian" } as const;
+export const saleActionLabels: Record<string, string> = {
+  "sale.drafted": "Draft dibuat",
+  "sale.confirmed": "Invoice dikonfirmasi",
+  "sale.cancelled": "Invoice dibatalkan",
+  "sale.corrected": "Invoice dikoreksi",
+};
 export { expenseCategoryLabels };
 export const capitalMovementLabels: Record<CapitalMovementType, string> = {
   capital_in: "Modal masuk",

@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { getSaleAction } from "@/app/actions/f2";
+import { getSaleAction, getSaleHistoryAction } from "@/app/actions/f2";
 import { getSaleOperationsAction } from "@/app/actions/f3";
 import { DeliveryPanel } from "@/components/delivery-panel";
 import { InternalShell } from "@/components/internal-shell";
 import { PaymentForm } from "@/components/payment-form";
-import { ErrorState, PageHeader, PaymentBadge, formatCrate, formatItemQuantity, rupiah } from "@/components/ui";
+import { SaleCorrectionPanel } from "@/components/sale-correction-panel";
+import { ErrorState, PageHeader, PaymentBadge, formatCrate, formatFinanceDate, formatItemQuantity, rupiah, saleActionLabels } from "@/components/ui";
+import { adjustmentTypeLabels, isCancellableStatus } from "@/domain/adjustments";
 import { sumCrateMilli } from "@/domain/crates";
 import { getCurrentOwner } from "@/lib/supabase/owner";
 
@@ -18,17 +20,18 @@ export default async function SaleDetailPage({ params, searchParams }: { params:
   const result = await getSaleAction({ id });
   if (!result.ok && result.error.code === "not_found") notFound();
   const created = (await searchParams).created === "1";
-  const operations = await getSaleOperationsAction({ saleId: id });
+  const [operations, history] = await Promise.all([getSaleOperationsAction({ saleId: id }), getSaleHistoryAction({ id })]);
 
   return (
     <InternalShell ownerName={owner.display_name}>
       <main className="page">
         {!result.ok ? <ErrorState {...result.error} retryHref={`/penjualan/${id}`}/> : <>
           {created && <p className="notice success" role="status">Penjualan berhasil disimpan.</p>}
+          {result.data.status === "cancelled" && <p className="notice error" role="status">Invoice dibatalkan{result.data.cancelledAt ? ` pada ${formatFinanceDate(result.data.cancelledAt)}` : ""}. Nomor invoice tetap tersimpan dan tidak dipakai ulang.</p>}
           <PageHeader
             title={result.data.invoiceNumber}
             description={`${result.data.customerName} · ${result.data.transactionDate}`}
-            action={<div className="invoice-actions"><PaymentBadge status={result.data.paymentStatus}/><Link className="button-secondary" href={`/penjualan/${id}/struk`}>Buka struk</Link></div>}
+            action={<div className="invoice-actions">{result.data.status === "cancelled" ? <span className="status status-cancelled">Dibatalkan</span> : <PaymentBadge status={result.data.paymentStatus}/>}<Link className="button-secondary" href={`/penjualan/${id}/struk`}>Buka struk</Link></div>}
           />
           <section className="invoice-grid">
             <div className="invoice-main">
@@ -65,11 +68,32 @@ export default async function SaleDetailPage({ params, searchParams }: { params:
                       <span>{payment.paymentNumber}</span>
                     </div>
                   ))}</div>}
-              <PaymentForm saleId={id} remainingRupiah={operations.data.billing.totalRupiah - operations.data.billing.paidRupiah}/>
+              {result.data.status !== "cancelled" && <PaymentForm saleId={id} remainingRupiah={operations.data.billing.totalRupiah - operations.data.billing.paidRupiah}/>}
             </section>
 
-            <DeliveryPanel saleId={id} saleCrateQuantityMilli={sumCrateMilli(result.data.items)} deliveries={operations.data.deliveries}/>
+            {result.data.status !== "cancelled" && <DeliveryPanel saleId={id} saleCrateQuantityMilli={sumCrateMilli(result.data.items)} deliveries={operations.data.deliveries}/>}
           </>}
+
+          {isCancellableStatus(result.data.status) && <SaleCorrectionPanel sale={{ id: result.data.id, invoiceNumber: result.data.invoiceNumber, subtotalRupiah: result.data.subtotalRupiah, discountRupiah: result.data.discountRupiah, feeRupiah: result.data.feeRupiah, totalRupiah: result.data.totalRupiah, paidRupiah: result.data.paidRupiah, dueDate: result.data.dueDate, notes: result.data.notes }}/>}
+
+          {!history.ok ? <p className="notice error" role="alert">{history.error.message}</p> : (history.data.adjustments.length > 0 || history.data.auditEvents.length > 0) && (
+            <section className="history-section" aria-labelledby="history-title">
+              <h2 id="history-title">Riwayat koreksi &amp; audit</h2>
+              {history.data.adjustments.length > 0 && <div className="data-list">{history.data.adjustments.map((adjustment) => (
+                <div className="data-row" key={adjustment.id}>
+                  <div><strong>{adjustmentTypeLabels[adjustment.type]}</strong><span>{adjustment.reason}</span></div>
+                  <div className="row-end"><strong>{rupiah(adjustment.amountRupiah)}</strong><span>{formatFinanceDate(adjustment.occurredAt)} · {adjustment.actorName}</span></div>
+                </div>
+              ))}</div>}
+              {history.data.auditEvents.length > 0 && <ol className="audit-trail">{history.data.auditEvents.map((event) => (
+                <li key={event.id}>
+                  <strong>{saleActionLabels[event.action] ?? event.action}</strong>
+                  <span>{formatFinanceDate(event.occurredAt)} · {event.actorName}</span>
+                  {event.reason && <small>{event.reason}</small>}
+                </li>
+              ))}</ol>}
+            </section>
+          )}
 
           <Link className="text-link" href="/penjualan">Kembali ke daftar penjualan</Link>
         </>}

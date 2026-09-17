@@ -108,4 +108,14 @@ describe("DrizzleF5Repository with PostgreSQL adapter", () => {
     expect(csv).toContain('"Estimasi laba bersih","1300000"');
     expect(csv).not.toContain("2000000");
   });
+
+  it("mengeluarkan invoice batal dari omzet, uang masuk, dan piutang", async () => {
+    await client.exec("update sales set status = 'cancelled', cancelled_at = now() where invoice_number = 'INV-REPORT'");
+    const balance = await repository.listSales(new Date("2026-09-15T17:00:00.000Z"), new Date("2026-09-17T16:59:59.999Z"));
+    const payments = await repository.listPayments(new Date("2026-09-15T17:00:00.000Z"), new Date("2026-09-17T16:59:59.999Z"));
+    const receivables = await repository.listReceivables(new Date("2026-09-17T16:59:59.999Z"));
+    expect(balance).toEqual([]);
+    expect(payments).toEqual([]);
+    expect(receivables).toEqual([]);
+  });
 });
