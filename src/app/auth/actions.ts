@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { loginErrorMessage } from "@/lib/auth/error";
 import { safeInternalRedirect } from "@/lib/auth/redirect";
 
 export type AuthState = { error?: string; success?: string };
@@ -13,8 +14,12 @@ export async function login(_state: AuthState, formData: FormData): Promise<Auth
   const parsed = credentialsSchema.safeParse({ email: formData.get("email"), password: formData.get("password") });
   if (!parsed.success) return { error: "Email atau kata sandi tidak valid." };
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
-  if (error) return { error: "Email atau kata sandi salah. Silakan coba lagi." };
+  try {
+    const { error } = await supabase.auth.signInWithPassword(parsed.data);
+    if (error) return { error: loginErrorMessage(error) };
+  } catch {
+    return { error: loginErrorMessage({}) };
+  }
   redirect(safeInternalRedirect(formData.get("next")?.toString()));
 }
 
