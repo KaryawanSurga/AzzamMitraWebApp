@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { capitalMovementCreateSchema, expenseCreateSchema, validateFinanceOccurredAt } from "./finance";
+import { capitalMovementCreateSchema, expenseCreateSchema, expenseListSchema, jakartaDateTimeLocal, validateFinanceOccurredAt } from "./finance";
 
 const base = { category: "egg_purchase", amountRupiah: 100_000, occurredAt: "2026-09-17T08:00:00+07:00", idempotencyKey: "11111111-1111-4111-8111-111111111111" } as const;
 
@@ -25,5 +25,18 @@ describe("finance contracts", () => {
     expect(validateFinanceOccurredAt("2026-09-17T10:00:01+07:00", now)).toContain("masa depan");
     expect(validateFinanceOccurredAt("2025-09-17T09:59:59+07:00", now)).toContain("satu tahun");
     expect(validateFinanceOccurredAt("2025-09-17T10:00:00+07:00", now)).toBeNull();
+  });
+  it("membandingkan filter periode berdasarkan waktu absolut", () => {
+    expect(expenseListSchema.safeParse({
+      from: "2026-09-17T08:00:00+07:00",
+      to: "2026-09-17T02:00:00Z",
+    }).success).toBe(true);
+    expect(expenseListSchema.safeParse({
+      from: "2026-09-17T10:00:00+07:00",
+      to: "2026-09-17T01:00:00Z",
+    }).error?.flatten().fieldErrors).toHaveProperty("to");
+  });
+  it("membentuk nilai datetime-local dalam zona Asia/Jakarta", () => {
+    expect(jakartaDateTimeLocal(new Date("2026-09-17T01:05:00Z"))).toBe("2026-09-17T08:05");
   });
 });

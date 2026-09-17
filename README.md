@@ -1,6 +1,6 @@
 # Azzam Mitra Webapp
 
-Fondasi Fase 1 serta implementasi Fase 2 aplikasi operasional internal Azzam Mitra: autentikasi owner, pelanggan, dan transaksi penjualan atomik beserta UI responsifnya.
+Fondasi Fase 1 serta implementasi operasional Fase 2–4 Azzam Mitra: autentikasi owner, pelanggan, penjualan, pembayaran, pengiriman, peti, pengeluaran, modal, dan prive dengan UI responsif.
 
 ## Prasyarat
 
@@ -17,6 +17,17 @@ npm run dev
 ```
 
 Buka `http://localhost:3000`. Shell awal dan production build tidak mengakses database atau membutuhkan secret production. Ganti nilai contoh di `.env.local` sebelum memakai Supabase atau database.
+
+### Supabase lokal
+
+Docker Desktop harus aktif. Jalankan stack dan migration dengan:
+
+```bash
+npx supabase start
+npm run db:migrate
+```
+
+Perbarui nilai Supabase pada `.env.local` dari output `npx supabase status`. Script database otomatis membaca `.env.local`; environment proses tetap memiliki prioritas bila nilainya diberikan secara eksplisit.
 
 ## Setup Supabase Auth
 
@@ -52,6 +63,8 @@ npm run db:migrate   # apply migration (memerlukan DATABASE_URL)
 npm run db:studio    # buka Drizzle Studio (memerlukan DATABASE_URL)
 ```
 
+Perintah Drizzle membaca `.env.local` melalui `node --env-file-if-exists`. Migration tidak pernah dijalankan otomatis saat aplikasi dimulai.
+
 ## Struktur
 
 - `src/app` — Next.js App Router dan global styles.
@@ -60,8 +73,10 @@ npm run db:studio    # buka Drizzle Studio (memerlukan DATABASE_URL)
 - `src/db` — koneksi PostgreSQL lazy dan entry point schema Drizzle.
 - `src/lib/supabase` — factory Supabase SSR untuk browser/server.
 - `src/domain` — kontrak Zod dan kalkulasi bisnis murni tanpa floating point.
-- `src/server/f2` — service dan repository server-only untuk pelanggan/penjualan.
-- `src/test` — setup test bersama.
+- `src/server/f2` — service dan repository pelanggan/penjualan.
+- `src/server/f3` — service dan repository pembayaran/pengiriman/peti.
+- `src/server/f4` — service dan repository pengeluaran/modal/prive.
+- `src/test` — setup test bersama dan penerapan migration nyata ke PGlite.
 - `docs` — PRD, workflow, spesifikasi teknis, dan UAT sebagai source of truth.
 - `brand` — brand kit Azzam Mitra: board, logo SVG, dan sumbernya. Token warna dan tipografi dipakai langsung oleh `src/app/globals.css`.
 
@@ -69,7 +84,9 @@ npm run db:studio    # buka Drizzle Studio (memerlukan DATABASE_URL)
 
 Fase 2 menyediakan server actions di `src/app/actions/f2.ts`; semua read/mutation melewati guard owner dan mengembalikan union result typed (`validation`, `unauthorized`, `not_found`, `conflict`, atau `retryable`). Setiap mutasi pelanggan dan penjualan wajib membawa UUID `idempotencyKey`; retry mengembalikan hasil mutation pertama. Status pembayaran sale diturunkan ulang dari pembayaran, jatuh tempo, dan tanggal server Asia/Jakarta saat dibaca. Browser tetap tidak menulis tabel public secara langsung. Halaman `/dashboard`, `/pelanggan`, `/pelanggan/[id]`, `/penjualan`, `/penjualan/baru`, dan `/penjualan/[id]` sudah tersedia beserta state loading, empty, error, dan not-found.
 
-Fase 3 menambahkan server actions di `src/app/actions/f3.ts` untuk pembayaran bertahap, pengiriman parsial, dan peti, dengan halaman `/peti` serta bagian pembayaran dan pengiriman pada detail invoice. Invariant yang dijaga server: pembayaran tidak melebihi sisa piutang, status pembayaran dihitung dari agregat pembayaran, penerimaan tidak melebihi rencana pengiriman, rencana pengiriman tidak melebihi peti pada penjualan, dan pengembalian peti tidak melebihi saldo pelanggan. Peti keluar dicatat saat penjualan dikonfirmasi. Setiap mutasi F3 membawa `idempotencyKey` yang dijaga unique index. Provisioning Supabase, pengeluaran, modal, struk, laporan, rate limiting, monitoring, dan deployment belum termasuk.
+Fase 3 menambahkan server actions di `src/app/actions/f3.ts` untuk pembayaran bertahap, pengiriman parsial, dan peti, dengan halaman `/peti` serta bagian pembayaran dan pengiriman pada detail invoice. Invariant yang dijaga server: pembayaran tidak melebihi sisa piutang, status pembayaran dihitung dari agregat pembayaran, penerimaan tidak melebihi rencana pengiriman, rencana pengiriman tidak melebihi peti pada penjualan, dan pengembalian peti tidak melebihi saldo pelanggan. Peti keluar dicatat saat penjualan dikonfirmasi. Setiap mutasi F3 membawa `idempotencyKey` yang dijaga unique index.
+
+Fase 4 menambahkan kontrak, migration, repository transaksional, server actions, dan UI untuk pengeluaran serta modal/prive. Route `/pengeluaran` menyediakan filter periode dan route `/pengeluaran/baru` mencatat biaya usaha; route `/pengaturan` memisahkan modal masuk dan prive dari pendapatan/biaya. Mutasi F4 bersifat idempoten dan menulis audit event dalam transaksi yang sama. Bukti pengeluaran sengaja belum diunggah sampai bucket privat, retensi, dan kebijakan akses ditetapkan; kolom `evidence_path` tetap disiapkan. UAT-07 dan UAT-08 telah dijalankan pada Supabase lokal, sedangkan acceptance deployment/cloud masih pending.
 
 ## Dokumentasi produk
 

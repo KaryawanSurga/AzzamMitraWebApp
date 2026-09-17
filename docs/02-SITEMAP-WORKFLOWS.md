@@ -17,7 +17,7 @@
 
 ## Navigasi utama
 
-Mobile memakai bottom navigation atau menu ringkas untuk Dashboard, Penjualan, Pengeluaran, Pelanggan, dan Lainnya. Desktop memakai sidebar. Aksi cepat **Catat Penjualan** dan **Catat Pengeluaran** selalu mudah ditemukan.
+Mobile memakai bottom navigation untuk Dashboard, Penjualan, Pengeluaran, Pelanggan, dan Peti. Desktop memakai sidebar yang sama; modal/prive tersedia dari halaman Pengeluaran menuju `/pengaturan`. Aksi cepat **Catat Penjualan** dan **Catat Pengeluaran** selalu mudah ditemukan.
 
 ## Penjualan baru
 

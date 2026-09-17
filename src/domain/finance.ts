@@ -3,6 +3,8 @@ import { idempotencyKeySchema, optionalText, paymentMethods, positiveRupiahSchem
 
 export const expenseCategories = ["egg_purchase", "delivery", "fuel_toll_parking", "loading", "wages", "packaging_crates", "maintenance", "rent_utilities_operations", "other"] as const;
 export const capitalMovementTypes = ["capital_in", "owner_draw"] as const;
+export type ExpenseCategory = (typeof expenseCategories)[number];
+export type CapitalMovementType = (typeof capitalMovementTypes)[number];
 
 const occurredAtSchema = z.iso.datetime({ offset: true, error: "Waktu transaksi harus berupa tanggal dan waktu ISO 8601 dengan zona waktu." });
 
@@ -30,7 +32,10 @@ const listInput = z.object({
   to: occurredAtSchema.optional(),
   limit: z.number().int().min(1).max(100).default(50),
   offset: z.number().int().nonnegative().default(0),
-}).refine(({ from, to }) => !from || !to || from <= to, { path: ["to"], message: "Batas akhir periode tidak boleh sebelum batas awal." });
+}).refine(
+  ({ from, to }) => !from || !to || new Date(from).getTime() <= new Date(to).getTime(),
+  { path: ["to"], message: "Batas akhir periode tidak boleh sebelum batas awal." },
+);
 
 export const expenseListSchema = listInput;
 export const capitalMovementListSchema = listInput;
@@ -38,6 +43,19 @@ export const capitalMovementListSchema = listInput;
 export type FinanceListInput = z.infer<typeof listInput>;
 export type ExpenseRecord = { id: string; expenseNumber: string; category: (typeof expenseCategories)[number]; amountRupiah: number; method: (typeof paymentMethods)[number] | null; occurredAt: string; notes: string | null };
 export type CapitalMovementRecord = { id: string; movementNumber: string; type: (typeof capitalMovementTypes)[number]; amountRupiah: number; occurredAt: string; notes: string | null };
+export function jakartaDateTimeLocal(value = new Date()): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(value);
+  const part = Object.fromEntries(parts.map(({ type, value: partValue }) => [type, partValue]));
+  return `${part.year}-${part.month}-${part.day}T${part.hour}:${part.minute}`;
+}
 
 export function validateFinanceOccurredAt(value: string, now = new Date()): string | null {
   const occurredAt = new Date(value);

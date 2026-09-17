@@ -5,6 +5,7 @@ import { BrandMark } from "@/components/brand-mark";
 const navigation = [
   ["/dashboard", "Dashboard"],
   ["/penjualan", "Penjualan"],
+  ["/pengeluaran", "Pengeluaran"],
   ["/pelanggan", "Pelanggan"],
   ["/peti", "Peti"],
 ] as const;

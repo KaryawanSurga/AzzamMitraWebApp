@@ -180,4 +180,29 @@ a { color: inherit; }
 .delivery-received { background: var(--am-status-lunas-bg); color: var(--am-status-lunas-fg); }
 .delivery-failed, .delivery-cancelled { background: var(--am-status-terlambat-bg); color: var(--am-status-terlambat-fg); }
 
+
+/* Pengeluaran, modal, dan prive */
+.finance-entry-page { width: min(100%, 54rem); }
+.finance-form { margin-top: 1rem; }
+.finance-choice { display: grid; gap: .75rem; margin: 0; border: 0; padding: 0; }
+.finance-choice legend { margin-bottom: .6rem; padding: 0; font-weight: 800; }
+.field-hint, .form-footnote { color: var(--am-text-quiet); font-size: .84rem; }
+.form-footnote { margin: 1rem 0 0; line-height: 1.55; }
+.period-filter { display: grid; grid-template-columns: minmax(10rem, 1fr) minmax(10rem, 1fr) auto auto; align-items: end; gap: .75rem; margin: 0 0 1.5rem; border: 1px solid var(--am-line); border-radius: var(--am-radius-besar); padding: 1rem; background: var(--am-surface-raised); }
+.period-filter.compact { grid-template-columns: 1fr 1fr; }
+.period-filter.compact button, .period-filter.compact .button-secondary { width: 100%; }
+.finance-settings-grid { display: grid; grid-template-columns: minmax(18rem, .9fr) minmax(0, 1.25fr); align-items: start; gap: 1.5rem; }
+.finance-settings-grid .finance-form .two-cols { grid-template-columns: 1fr; }
+.finance-row time, .finance-row .row-end span { color: var(--am-text-quiet); font-size: .82rem; }
+.finance-row .row-end { min-width: 12rem; }
+.money-in { color: var(--am-success-fg); }
+.money-out { color: var(--am-error-fg); }
 @media (max-width: 767px) { .sidebar { display: none; }.app-content { margin-left: 0; padding-bottom: 4.5rem; }.bottom-nav { position: fixed; z-index: 10; inset: auto 0 0; display: grid; grid-template-columns: repeat(4,1fr); border-top: 1px solid #ccd3cb; background: var(--am-surface-raised); }.bottom-nav a { padding: 1rem .25rem; color: var(--am-hijau-mitra); text-align: center; text-decoration: none; font-size: .78rem; font-weight: 800; }.page { padding-top: 1.25rem; }.page-header { align-items: start; flex-direction: column; }.page-header .button { width: 100%; }.quick-actions { flex-direction: column; }.sale-layout,.invoice-grid { grid-template-columns: 1fr; }.summary { position: static; }.two-cols { grid-template-columns: 1fr; }.data-row.sale-row { align-items: start; }.row-end { justify-items: end; }.search > div { align-items: stretch; } }
+
+@media (max-width: 767px) {
+  .bottom-nav { grid-template-columns: repeat(5, 1fr); }
+  .bottom-nav a { font-size: .68rem; }
+  .period-filter, .period-filter.compact, .finance-settings-grid { grid-template-columns: 1fr; }
+  .finance-row { align-items: start; }
+  .finance-row .row-end { min-width: auto; }
+}
