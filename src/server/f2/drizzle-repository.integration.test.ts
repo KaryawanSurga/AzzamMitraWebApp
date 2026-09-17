@@ -67,4 +67,40 @@ describe("DrizzleF2Repository with PostgreSQL adapter", () => {
     expect(Number(draftRows.rows[0].count)).toBe(1);
   });
 
+  it("UAT-10: membatalkan invoice secara atomik dengan adjustment dan audit", async () => {
+    const input = saleMutationSchema.parse(saleRaw);
+    const created = await repository.createSaleAtomic(input, calculateSale(input, "2026-09-15"), owner);
+    const key = crypto.randomUUID();
+    const cancelled = await repository.cancelSaleAtomic({ saleId: created.id, idempotencyKey: key, reason: "Pelanggan membatalkan" }, owner, "2026-09-17");
+
+    expect(cancelled).toMatchObject({ invoiceNumber: created.invoiceNumber, status: "cancelled", totalRupiah: 200_000, paidRupiah: 50_000, remainingRupiah: 150_000 });
+    expect(await repository.findAdjustmentByIdempotencyKey(key)).toEqual({ saleId: created.id });
+    const [detail, auditRows] = await Promise.all([
+      repository.getSale(created.id, "2026-09-17"),
+      db.execute(sql.raw("select action, reason, before, after from audit_events where action = 'sale.cancelled'")),
+    ]);
+    expect(detail).toMatchObject({ invoiceNumber: created.invoiceNumber, status: "cancelled", cancelledAt: expect.any(String) });
+    expect(auditRows.rows).toEqual([expect.objectContaining({ action: "sale.cancelled", reason: "Pelanggan membatalkan", before: expect.objectContaining({ status: "confirmed", totalRupiah: 200_000 }), after: expect.objectContaining({ status: "cancelled", totalRupiah: 200_000 }) })]);
+    expect(await repository.listSaleAdjustments(created.id)).toMatchObject([{ type: "cancellation", amountRupiah: 200_000, reason: "Pelanggan membatalkan", actorName: "Owner" }]);
+  });
+
+  it("menolak kunci idempotensi pembatalan yang dipakai ulang", async () => {
+    const input = saleMutationSchema.parse(saleRaw);
+    const created = await repository.createSaleAtomic(input, calculateSale(input, "2026-09-15"), owner);
+    const key = crypto.randomUUID();
+    await repository.cancelSaleAtomic({ saleId: created.id, idempotencyKey: key, reason: "Pelanggan membatalkan" }, owner, "2026-09-17");
+    await expect(repository.cancelSaleAtomic({ saleId: created.id, idempotencyKey: key, reason: "Pelanggan membatalkan" }, owner, "2026-09-17")).rejects.toBeInstanceOf(RepositoryConflictError);
+  });
+
+  it("UAT-10: mengoreksi nominal invoice dan menyimpan perubahan di audit", async () => {
+    const input = saleMutationSchema.parse(saleRaw);
+    const created = await repository.createSaleAtomic(input, calculateSale(input, "2026-09-15"), owner);
+    const corrected = await repository.correctSaleAtomic({ saleId: created.id, idempotencyKey: crypto.randomUUID(), reason: "Diskon disepakati ulang", discountRupiah: 20_000, feeRupiah: 5_000, totalRupiah: 185_000, dueDate: "2026-09-20", notes: "Revisi", changes: ["diskon", "biaya"] }, owner, "2026-09-17");
+
+    expect(corrected).toMatchObject({ invoiceNumber: created.invoiceNumber, status: "confirmed", totalRupiah: 185_000, dueDate: "2026-09-20" });
+    const auditRows = await db.execute(sql.raw("select before, after, reason from audit_events where action = 'sale.corrected'"));
+    expect(auditRows.rows).toEqual([expect.objectContaining({ reason: "Diskon disepakati ulang", before: expect.objectContaining({ discountRupiah: 0, totalRupiah: 200_000 }), after: expect.objectContaining({ discountRupiah: 20_000, feeRupiah: 5_000, totalRupiah: 185_000, changes: ["diskon", "biaya"] }) })]);
+    expect(await repository.listSaleAdjustments(created.id)).toMatchObject([{ type: "correction", amountRupiah: 15_000 }]);
+    expect(await repository.getSale(created.id, "2026-09-17")).toMatchObject({ totalRupiah: 185_000, remainingRupiah: 135_000, notes: "Revisi" });
+  });
 });

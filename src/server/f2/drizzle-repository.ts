@@ -6,13 +6,24 @@ import type { OwnerProfile } from "@/lib/auth/owner";
 import { derivePaymentStatus, jakartaDate, type SaleMutationInput } from "@/domain/sales";
 import { milliToQuantity } from "@/domain/contracts";
 import { sumCrateMilli } from "@/domain/crates";
-import { type CalculatedSale, type CustomerRecord, type F2Repository, type SaleRecord } from "./repository";
+import { type CalculatedSale, type CustomerRecord, type F2Repository, type SaleCorrectionPersistInput, type SaleRecord } from "./repository";
 import { toRepositoryError } from "@/server/errors";
 
 type Db = NodePgDatabase<typeof schema>;
 const customerColumns = { id: schema.customers.id, customerNumber: schema.customers.customerNumber, name: schema.customers.name, whatsapp: schema.customers.whatsapp, address: schema.customers.address, notes: schema.customers.notes, isActive: schema.customers.isActive };
 const displayNumber = (prefix: string) => `${prefix}-${Date.now()}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
 const dbError: (error: unknown) => never = toRepositoryError;
+
+const saleChangeColumns = {
+  id: schema.sales.id, invoiceNumber: schema.sales.invoiceNumber, idempotencyKey: schema.sales.idempotencyKey,
+  status: schema.sales.status, dueDate: schema.sales.dueDate, subtotalRupiah: schema.sales.subtotalRupiah,
+  discountRupiah: schema.sales.discountRupiah, feeRupiah: schema.sales.feeRupiah, totalRupiah: schema.sales.totalRupiah,
+  notes: schema.sales.notes,
+};
+
+function auditSnapshot(sale: { status: string; subtotalRupiah: number; discountRupiah: number; feeRupiah: number; totalRupiah: number; dueDate: string | null; notes: string | null }) {
+  return { status: sale.status, subtotalRupiah: sale.subtotalRupiah, discountRupiah: sale.discountRupiah, feeRupiah: sale.feeRupiah, totalRupiah: sale.totalRupiah, dueDate: sale.dueDate, notes: sale.notes };
+}
 
 export class DrizzleF2Repository implements F2Repository {
   constructor(private readonly db: Db) {}
@@ -42,5 +53,45 @@ export class DrizzleF2Repository implements F2Repository {
     }
   }
   async listSales(input: { query: string; limit: number; offset: number }, today: string) { try { const search = input.query ? or(ilike(schema.sales.invoiceNumber, `%${input.query}%`), ilike(schema.customers.name, `%${input.query}%`)) : undefined; const rows = await this.db.select({ id: schema.sales.id, invoiceNumber: schema.sales.invoiceNumber, idempotencyKey: schema.sales.idempotencyKey, totalRupiah: schema.sales.totalRupiah, dueDate: schema.sales.dueDate, status: schema.sales.status, customerName: schema.customers.name, transactionDate: schema.sales.transactionDate }).from(schema.sales).innerJoin(schema.customers, eq(schema.sales.customerId, schema.customers.id)).where(search).orderBy(desc(schema.sales.transactionDate)).limit(input.limit).offset(input.offset); return Promise.all(rows.map(async (sale) => { const payments = await this.db.select({ amount: schema.payments.amountRupiah }).from(schema.payments).where(eq(schema.payments.saleId, sale.id)); const paidRupiah = payments.reduce((sum, row) => sum + row.amount, 0); const remainingRupiah = sale.totalRupiah - paidRupiah; return { ...sale, transactionDate: jakartaDate(sale.transactionDate), status: sale.status as SaleRecord["status"], paidRupiah, remainingRupiah, paymentStatus: derivePaymentStatus(remainingRupiah, paidRupiah, sale.dueDate, today) }; })); } catch (error) { dbError(error); } }
-  async getSale(id: string, today: string) { try { const [sale] = await this.db.select({ id: schema.sales.id, invoiceNumber: schema.sales.invoiceNumber, idempotencyKey: schema.sales.idempotencyKey, customerId: schema.sales.customerId, customerName: schema.customers.name, customerNumber: schema.customers.customerNumber, transactionDate: schema.sales.transactionDate, subtotalRupiah: schema.sales.subtotalRupiah, discountRupiah: schema.sales.discountRupiah, feeRupiah: schema.sales.feeRupiah, totalRupiah: schema.sales.totalRupiah, dueDate: schema.sales.dueDate, status: schema.sales.status, notes: schema.sales.notes }).from(schema.sales).innerJoin(schema.customers, eq(schema.sales.customerId, schema.customers.id)).where(eq(schema.sales.id, id)).limit(1); if (!sale) return null; const [items, payments] = await Promise.all([this.db.select({ id: schema.saleItems.id, description: schema.saleItems.descriptionSnapshot, pricingBasis: schema.saleItems.pricingBasis, crateQuantity: schema.saleItems.crateQuantity, weightKg: schema.saleItems.weightKg, unitPriceRupiah: schema.saleItems.unitPriceRupiah, subtotalRupiah: schema.saleItems.subtotalRupiah }).from(schema.saleItems).where(eq(schema.saleItems.saleId, id)), this.db.select({ id: schema.payments.id, amountRupiah: schema.payments.amountRupiah, method: schema.payments.method, paidAt: schema.payments.paidAt }).from(schema.payments).where(eq(schema.payments.saleId, id))]); const paidRupiah = payments.reduce((sum, row) => sum + row.amountRupiah, 0); const remainingRupiah = sale.totalRupiah - paidRupiah; return { ...sale, transactionDate: jakartaDate(sale.transactionDate), status: sale.status as SaleRecord["status"], paidRupiah, remainingRupiah, paymentStatus: derivePaymentStatus(remainingRupiah, paidRupiah, sale.dueDate, today), items, payments: payments.map((payment) => ({ ...payment, paidAt: payment.paidAt.toISOString() })) }; } catch (error) { dbError(error); } }
+  async getSale(id: string, today: string) { try { const [sale] = await this.db.select({ id: schema.sales.id, invoiceNumber: schema.sales.invoiceNumber, idempotencyKey: schema.sales.idempotencyKey, customerId: schema.sales.customerId, customerName: schema.customers.name, customerNumber: schema.customers.customerNumber, transactionDate: schema.sales.transactionDate, subtotalRupiah: schema.sales.subtotalRupiah, discountRupiah: schema.sales.discountRupiah, feeRupiah: schema.sales.feeRupiah, totalRupiah: schema.sales.totalRupiah, dueDate: schema.sales.dueDate, status: schema.sales.status, notes: schema.sales.notes, cancelledAt: schema.sales.cancelledAt }).from(schema.sales).innerJoin(schema.customers, eq(schema.sales.customerId, schema.customers.id)).where(eq(schema.sales.id, id)).limit(1); if (!sale) return null; const [items, payments] = await Promise.all([this.db.select({ id: schema.saleItems.id, description: schema.saleItems.descriptionSnapshot, pricingBasis: schema.saleItems.pricingBasis, crateQuantity: schema.saleItems.crateQuantity, weightKg: schema.saleItems.weightKg, unitPriceRupiah: schema.saleItems.unitPriceRupiah, subtotalRupiah: schema.saleItems.subtotalRupiah }).from(schema.saleItems).where(eq(schema.saleItems.saleId, id)), this.db.select({ id: schema.payments.id, amountRupiah: schema.payments.amountRupiah, method: schema.payments.method, paidAt: schema.payments.paidAt }).from(schema.payments).where(eq(schema.payments.saleId, id))]); const paidRupiah = payments.reduce((sum, row) => sum + row.amountRupiah, 0); const remainingRupiah = sale.totalRupiah - paidRupiah; return { ...sale, transactionDate: jakartaDate(sale.transactionDate), status: sale.status as SaleRecord["status"], cancelledAt: sale.cancelledAt ? sale.cancelledAt.toISOString() : null, paidRupiah, remainingRupiah, paymentStatus: derivePaymentStatus(remainingRupiah, paidRupiah, sale.dueDate, today), items, payments: payments.map((payment) => ({ ...payment, paidAt: payment.paidAt.toISOString() })) }; } catch (error) { dbError(error); } }
+
+  async findAdjustmentByIdempotencyKey(key: string): Promise<{ saleId: string } | null> { try { const [record] = await this.db.select({ saleId: schema.adjustments.saleId }).from(schema.adjustments).where(eq(schema.adjustments.idempotencyKey, key)).limit(1); return record ?? null; } catch (error) { dbError(error); } }
+
+  async cancelSaleAtomic(input: { saleId: string; idempotencyKey: string; reason: string }, actor: OwnerProfile, today: string): Promise<SaleRecord | null> {
+    try {
+      return await this.db.transaction(async (tx) => {
+        const [before] = await tx.select(saleChangeColumns).from(schema.sales).where(eq(schema.sales.id, input.saleId)).limit(1).for("update");
+        if (!before) return null;
+        const payments = await tx.select({ amount: schema.payments.amountRupiah }).from(schema.payments).where(eq(schema.payments.saleId, input.saleId));
+        const paidRupiah = payments.reduce((sum, row) => sum + row.amount, 0);
+        const cancelledAt = new Date();
+        const [after] = await tx.update(schema.sales).set({ status: "cancelled", cancelledAt, updatedAt: cancelledAt }).where(eq(schema.sales.id, input.saleId)).returning(saleChangeColumns);
+        await tx.insert(schema.adjustments).values({ adjustmentNumber: displayNumber("ADJ"), idempotencyKey: input.idempotencyKey, saleId: input.saleId, type: "cancellation", amountRupiah: before.totalRupiah, reason: input.reason, occurredAt: cancelledAt, createdBy: actor.id });
+        await tx.insert(schema.auditEvents).values({ eventNumber: displayNumber("AUD"), idempotencyKey: input.idempotencyKey, actorId: actor.id, entityType: "sale", entityId: input.saleId, action: "sale.cancelled", before: auditSnapshot(before), after: auditSnapshot(after), reason: input.reason });
+        const remainingRupiah = after.totalRupiah - paidRupiah;
+        return { id: after.id, invoiceNumber: after.invoiceNumber, idempotencyKey: after.idempotencyKey, totalRupiah: after.totalRupiah, paidRupiah, remainingRupiah, dueDate: after.dueDate, paymentStatus: derivePaymentStatus(remainingRupiah, paidRupiah, after.dueDate, today), status: "cancelled" as const };
+      });
+    } catch (error) { dbError(error); }
+  }
+
+  async correctSaleAtomic(input: SaleCorrectionPersistInput, actor: OwnerProfile, today: string): Promise<SaleRecord | null> {
+    try {
+      return await this.db.transaction(async (tx) => {
+        const [before] = await tx.select(saleChangeColumns).from(schema.sales).where(eq(schema.sales.id, input.saleId)).limit(1).for("update");
+        if (!before) return null;
+        const payments = await tx.select({ amount: schema.payments.amountRupiah }).from(schema.payments).where(eq(schema.payments.saleId, input.saleId));
+        const paidRupiah = payments.reduce((sum, row) => sum + row.amount, 0);
+        const correctedAt = new Date();
+        const [after] = await tx.update(schema.sales).set({ discountRupiah: input.discountRupiah, feeRupiah: input.feeRupiah, totalRupiah: input.totalRupiah, dueDate: input.dueDate, notes: input.notes, updatedAt: correctedAt }).where(eq(schema.sales.id, input.saleId)).returning(saleChangeColumns);
+        await tx.insert(schema.adjustments).values({ adjustmentNumber: displayNumber("ADJ"), idempotencyKey: input.idempotencyKey, saleId: input.saleId, type: "correction", amountRupiah: Math.abs(after.totalRupiah - before.totalRupiah), reason: input.reason, occurredAt: correctedAt, createdBy: actor.id });
+        await tx.insert(schema.auditEvents).values({ eventNumber: displayNumber("AUD"), idempotencyKey: input.idempotencyKey, actorId: actor.id, entityType: "sale", entityId: input.saleId, action: "sale.corrected", before: auditSnapshot(before), after: { ...auditSnapshot(after), changes: input.changes }, reason: input.reason });
+        const remainingRupiah = after.totalRupiah - paidRupiah;
+        return { id: after.id, invoiceNumber: after.invoiceNumber, idempotencyKey: after.idempotencyKey, totalRupiah: after.totalRupiah, paidRupiah, remainingRupiah, dueDate: after.dueDate, paymentStatus: derivePaymentStatus(remainingRupiah, paidRupiah, after.dueDate, today), status: after.status as SaleRecord["status"] };
+      });
+    } catch (error) { dbError(error); }
+  }
+
+  async listSaleAdjustments(saleId: string) { try { const rows = await this.db.select({ id: schema.adjustments.id, adjustmentNumber: schema.adjustments.adjustmentNumber, type: schema.adjustments.type, amountRupiah: schema.adjustments.amountRupiah, reason: schema.adjustments.reason, occurredAt: schema.adjustments.occurredAt, actorName: schema.users.displayName }).from(schema.adjustments).innerJoin(schema.users, eq(schema.adjustments.createdBy, schema.users.id)).where(eq(schema.adjustments.saleId, saleId)).orderBy(desc(schema.adjustments.occurredAt)); return rows.map((row) => ({ ...row, occurredAt: row.occurredAt.toISOString() })); } catch (error) { dbError(error); } }
+
+  async listSaleAuditEvents(saleId: string) { try { const rows = await this.db.select({ id: schema.auditEvents.id, action: schema.auditEvents.action, reason: schema.auditEvents.reason, actorName: schema.users.displayName, occurredAt: schema.auditEvents.occurredAt }).from(schema.auditEvents).innerJoin(schema.users, eq(schema.auditEvents.actorId, schema.users.id)).where(and(eq(schema.auditEvents.entityType, "sale"), eq(schema.auditEvents.entityId, saleId))).orderBy(desc(schema.auditEvents.occurredAt)); return rows.map((row) => ({ ...row, occurredAt: row.occurredAt.toISOString() })); } catch (error) { dbError(error); } }
 }

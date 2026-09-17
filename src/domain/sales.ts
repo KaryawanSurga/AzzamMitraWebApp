@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { dateSchema, decimalQuantitySchema, idempotencyKeySchema, optionalText, rupiahSchema, scaledQuantity, uuidSchema } from "./contracts";
+import { dateSchema, decimalQuantitySchema, idempotencyKeySchema, optionalText, rupiahSchema, saleStatuses, scaledQuantity, uuidSchema } from "./contracts";
 
 
 export const customerCreateSchema = z.object({
@@ -49,14 +49,14 @@ export type SaleMutationInput = z.infer<typeof saleMutationSchema>;
 export const saleRecordSchema = z.object({
   id: uuidSchema, invoiceNumber: z.string(), idempotencyKey: idempotencyKeySchema, totalRupiah: rupiahSchema,
   paidRupiah: rupiahSchema, remainingRupiah: rupiahSchema,
-  dueDate: dateSchema.nullable(), paymentStatus: z.enum(["unpaid", "partial", "paid", "due", "overdue"]), status: z.enum(["draft", "confirmed"]),
+  dueDate: dateSchema.nullable(), paymentStatus: z.enum(["unpaid", "partial", "paid", "due", "overdue"]), status: z.enum(saleStatuses),
 });
 export type CustomerRecord = z.infer<typeof customerRecordSchema>;
 export type SaleRecord = z.infer<typeof saleRecordSchema>;
 export const saleListSchema = z.object({ query: z.string().trim().max(200).default(""), limit: z.number().int().min(1).max(100).default(50), offset: z.number().int().nonnegative().default(0) });
 export const saleIdSchema = z.object({ id: uuidSchema });
 export type SaleListItem = SaleRecord & { customerName: string; transactionDate: string };
-export type SaleDetail = SaleListItem & { customerId: string; customerNumber: string; subtotalRupiah: number; discountRupiah: number; feeRupiah: number; notes: string | null; items: Array<{ id: string; description: string; pricingBasis: "crate" | "kg"; crateQuantity: string | null; weightKg: string | null; unitPriceRupiah: number; subtotalRupiah: number }>; payments: Array<{ id: string; amountRupiah: number; method: "cash" | "transfer" | "other"; paidAt: string }> };
+export type SaleDetail = SaleListItem & { customerId: string; customerNumber: string; subtotalRupiah: number; discountRupiah: number; feeRupiah: number; notes: string | null; cancelledAt: string | null; items: Array<{ id: string; description: string; pricingBasis: "crate" | "kg"; crateQuantity: string | null; weightKg: string | null; unitPriceRupiah: number; subtotalRupiah: number }>; payments: Array<{ id: string; amountRupiah: number; method: "cash" | "transfer" | "other"; paidAt: string }> };
 
 export function derivePaymentStatus(remainingRupiah: number, paidRupiah: number, dueDate: string | null | undefined, today: string) {
   if (remainingRupiah === 0) return "paid" as const;

@@ -15,3 +15,6 @@ export async function getCustomerAction(input: unknown) { return service().getCu
 export async function createSaleAction(input: unknown) { return service().createSale(input, await getCurrentOwner()); }
 export async function listSalesAction(input: unknown) { return service().listSales(input, await getCurrentOwner()); }
 export async function getSaleAction(input: unknown) { return service().getSale(input, await getCurrentOwner()); }
+export async function getSaleHistoryAction(input: unknown) { return service().getSaleHistory(input, await getCurrentOwner()); }
+export async function cancelSaleAction(input: unknown) { return service().cancelSale(input, await getCurrentOwner()); }
+export async function correctSaleAction(input: unknown) { return service().correctSale(input, await getCurrentOwner()); }
