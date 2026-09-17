@@ -16,7 +16,9 @@
     "test:watch": "vitest",
     "db:generate": "node --env-file-if-exists=.env.local ./node_modules/drizzle-kit/bin.cjs generate",
     "db:migrate": "node --env-file-if-exists=.env.local ./node_modules/drizzle-kit/bin.cjs migrate",
-    "db:studio": "node --env-file-if-exists=.env.local ./node_modules/drizzle-kit/bin.cjs studio"
+    "db:studio": "node --env-file-if-exists=.env.local ./node_modules/drizzle-kit/bin.cjs studio",
+    "db:backup": "node --env-file-if-exists=.env.local scripts/backup.mjs",
+    "db:restore": "node --env-file-if-exists=.env.local scripts/restore.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

@@ -1,3 +1,5 @@
+import { logServerEvent } from "./observability";
+
 /* Kegagalan repository dipetakan service menjadi hasil typed. Satu definisi untuk seluruh fase. */
 export class RepositoryConflictError extends Error {}
 export class RepositoryUnavailableError extends Error {
@@ -15,5 +17,6 @@ export function isUniqueViolation(error: unknown): boolean {
 
 export function toRepositoryError(error: unknown): never {
   if (isUniqueViolation(error)) throw new RepositoryConflictError();
+  logServerEvent("error", "repository.unavailable", { message: error instanceof Error ? error.message : String(error) });
   throw new RepositoryUnavailableError(error);
 }

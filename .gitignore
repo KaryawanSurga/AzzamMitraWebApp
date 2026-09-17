@@ -8,6 +8,9 @@
 # tests
 /coverage/
 
+# database backups
+/backups/
+
 # environment files (the documented example is committed)
 .env*
 !.env.example
