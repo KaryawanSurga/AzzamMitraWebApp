@@ -66,4 +66,29 @@ describe.runIf(Boolean(connectionString))("acceptance F6 pada PostgreSQL nyata",
     const invoiceRows = await db.select({ status: schema.sales.status, cancelledAt: schema.sales.cancelledAt }).from(schema.sales).where(eq(schema.sales.id, created.data.id));
     expect(invoiceRows).toEqual([{ status: "cancelled", cancelledAt: expect.any(Date) }]);
   });
+
+  it("UAT-11: menerima backdate tepat satu tahun dan menolak yang lebih lama atau masa depan", async () => {
+    const service = new F2Service(repository);
+    const today = jakartaDate(new Date());
+    const [year, month, day] = today.split("-").map(Number);
+    const lastDay = new Date(Date.UTC(year - 1, month, 0)).getUTCDate();
+    const minimum = `${year - 1}-${String(month).padStart(2, "0")}-${String(Math.min(day, lastDay)).padStart(2, "0")}`;
+    const previousDay = (value: string) => { const date = new Date(`${value}T00:00:00+07:00`); date.setUTCDate(date.getUTCDate() - 1); return jakartaDate(date); };
+    const nextDay = (value: string) => { const date = new Date(`${value}T00:00:00+07:00`); date.setUTCDate(date.getUTCDate() + 1); return jakartaDate(date); };
+
+    const customer = await repository.createCustomer({ idempotencyKey: crypto.randomUUID(), name: `UAT Backdate ${Date.now()}` }, owner);
+    const base = {
+      customerId: customer.id, items: [{ description: "UAT backdate", pricingBasis: "crate", crateQuantity: "1", unitPriceRupiah: 50_000 }],
+      discountRupiah: 0, feeRupiah: 0, paymentChoice: "full", paymentMethod: "cash", idempotencyKey: crypto.randomUUID(), status: "confirmed",
+    } as const;
+
+    const accepted = await service.createSale({ ...base, transactionDate: minimum, idempotencyKey: crypto.randomUUID() }, owner);
+    expect(accepted).toMatchObject({ ok: true });
+
+    const tooOld = await service.createSale({ ...base, transactionDate: previousDay(minimum), idempotencyKey: crypto.randomUUID() }, owner);
+    expect(tooOld).toMatchObject({ ok: false, error: { code: "validation", fields: { transactionDate: [expect.stringContaining("satu tahun")] } } });
+
+    const future = await service.createSale({ ...base, transactionDate: nextDay(today), idempotencyKey: crypto.randomUUID() }, owner);
+    expect(future).toMatchObject({ ok: false, error: { code: "validation", fields: { transactionDate: [expect.stringContaining("masa depan")] } } });
+  });
 });
