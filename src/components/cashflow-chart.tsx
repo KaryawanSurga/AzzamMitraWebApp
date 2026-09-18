@@ -14,7 +14,7 @@ const shortDate = new Intl.DateTimeFormat("id-ID", {
 export function CashflowChart({ points }: { points: CashflowPoint[] }) {
   const width = 760;
   const height = 280;
-  const padding = { top: 24, right: 20, bottom: 42, left: 66 };
+  const padding = { top: 24, right: 20, bottom: 46, left: 76 };
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
   const highest = Math.max(1, ...points.flatMap((point) => [point.incomeRupiah, point.expenseRupiah]));
@@ -32,9 +32,11 @@ export function CashflowChart({ points }: { points: CashflowPoint[] }) {
   const areaPath = incomeCoordinates.length
     ? `${incomePath} L${incomeCoordinates.at(-1)!.x.toFixed(2)},${padding.top + plotHeight} L${padding.left},${padding.top + plotHeight} Z`
     : "";
-  const labelIndexes = new Set([0, points.length - 1]);
-  for (let index = 1; index < 4; index += 1) {
-    labelIndexes.add(Math.round((points.length - 1) * index / 4));
+  const labelIndexes = new Set(points.length <= 10 ? points.map((_, index) => index) : [0, points.length - 1]);
+  if (points.length > 10) {
+    for (let index = 1; index < 4; index += 1) {
+      labelIndexes.add(Math.round((points.length - 1) * index / 4));
+    }
   }
   const hasActivity = points.some((point) => point.incomeRupiah > 0 || point.expenseRupiah > 0);
 
@@ -61,7 +63,7 @@ export function CashflowChart({ points }: { points: CashflowPoint[] }) {
             return (
               <g key={ratio}>
                 <line className="chart-grid-line" x1={padding.left} x2={width - padding.right} y1={y} y2={y}/>
-                <text className="chart-axis-label" x={padding.left - 12} y={y + 4} textAnchor="end">
+                <text className="chart-axis-label" x={padding.left - 10} y={y + 5} textAnchor="end">
                   {compactRupiah.format(highest * ratio)}
                 </text>
               </g>
@@ -71,7 +73,7 @@ export function CashflowChart({ points }: { points: CashflowPoint[] }) {
             <text
               className="chart-axis-label"
               x={padding.left + index * stepX}
-              y={height - 12}
+              y={height - 10}
               textAnchor={index === 0 ? "start" : index === points.length - 1 ? "end" : "middle"}
               key={point.date}
             >

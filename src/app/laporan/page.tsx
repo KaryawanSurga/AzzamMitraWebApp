@@ -77,11 +77,11 @@ export default async function ReportPage({ searchParams }: { searchParams: Promi
                   <thead><tr><th>Tanggal</th><th>Jenis</th><th>Nomor</th><th>Keterangan</th><th>Nominal</th></tr></thead>
                   <tbody>{result.data.rows.map((row, index) => (
                     <tr key={`${row.type}-${row.reference}-${index}`}>
-                      <td>{formatDate(row.date)}</td>
-                      <td><span className={`report-type ${row.type}`}>{typeLabels[row.type]}</span></td>
-                      <td>{row.reference}</td>
-                      <td>{row.description}</td>
-                      <td>{rupiah(row.amountRupiah)}</td>
+                      <td data-label="Tanggal">{formatDate(row.date)}</td>
+                      <td data-label="Jenis"><span className={`report-type ${row.type}`}>{typeLabels[row.type]}</span></td>
+                      <td data-label="Nomor">{row.reference}</td>
+                      <td data-label="Keterangan">{row.description}</td>
+                      <td data-label="Nominal">{rupiah(row.amountRupiah)}</td>
                     </tr>
                   ))}</tbody>
                 </table>

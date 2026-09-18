@@ -12,6 +12,19 @@ export const saleActionLabels: Record<string, string> = {
   "sale.confirmed": "Invoice dikonfirmasi",
   "sale.cancelled": "Invoice dibatalkan",
   "sale.corrected": "Invoice dikoreksi",
+  "sale.payment_recorded": "Pembayaran dicatat",
+  "delivery.created": "Pengiriman direncanakan",
+  "delivery.status_changed": "Status pengiriman diubah",
+  "delivery.partially_received": "Pengiriman diterima sebagian",
+  "delivery.received": "Pengiriman diterima",
+  "crate.returned": "Peti dikembalikan",
+  "customer.created": "Pelanggan dibuat",
+  "customer.updated": "Pelanggan diperbarui",
+  "customer.enabled": "Pelanggan diaktifkan",
+  "customer.archived": "Pelanggan dinonaktifkan",
+  "expense.created": "Pengeluaran dicatat",
+  "capital.in.created": "Modal masuk dicatat",
+  "owner.draw.created": "Prive dicatat",
 };
 export { expenseCategoryLabels };
 export const capitalMovementLabels: Record<CapitalMovementType, string> = {

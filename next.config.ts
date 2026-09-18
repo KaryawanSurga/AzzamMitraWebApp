@@ -10,6 +10,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  devIndicators: { position: "top-right" },
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },
