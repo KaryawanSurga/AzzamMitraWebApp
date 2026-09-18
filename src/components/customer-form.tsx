@@ -10,8 +10,39 @@ export function CustomerForm({ customer }: { customer?: CustomerRecord }) {
   const router = useRouter(); const [key, setKey] = useState(freshKey); const [pending, setPending] = useState(false); const [message, setMessage] = useState(""); const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [fields, setFields] = useState<Fields>({ name: customer?.name ?? "", whatsapp: customer?.whatsapp ?? "", address: customer?.address ?? "", notes: customer?.notes ?? "" });
   const set = (name: keyof Fields, value: string) => setFields((old) => ({ ...old, [name]: value }));
-  async function submit(event: React.FormEvent) { event.preventDefault(); if (pending) return; setPending(true); setMessage(""); setErrors({}); const payload = { ...fields, idempotencyKey: key, ...(customer ? { id: customer.id } : {}) }; const result = customer ? await updateCustomerAction(payload) : await createCustomerAction(payload); setPending(false); if (!result.ok) { setMessage(result.error.message); setErrors(result.error.fields ?? {}); return; } setKey(freshKey()); setMessage(customer ? "Perubahan pelanggan tersimpan." : "Pelanggan berhasil ditambahkan."); if (!customer) router.push(`/pelanggan/${result.data.id}`); else router.refresh(); }
-  async function archive() { if (!customer || pending || !window.confirm(`Nonaktifkan ${customer.name}? Pelanggan tetap ada di histori transaksi.`)) return; setPending(true); const result = await archiveCustomerAction({ id: customer.id, idempotencyKey: key }); setPending(false); if (!result.ok) { setMessage(result.error.message); return; } setKey(freshKey()); setMessage("Pelanggan dinonaktifkan dan tidak lagi tersedia untuk transaksi baru."); router.refresh(); }
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (pending) return;
+    setPending(true); setMessage(""); setErrors({});
+    try {
+      const payload = { ...fields, idempotencyKey: key, ...(customer ? { id: customer.id } : {}) };
+      const result = customer ? await updateCustomerAction(payload) : await createCustomerAction(payload);
+      if (!result.ok) { setMessage(result.error.message); setErrors(result.error.fields ?? {}); return; }
+      setKey(freshKey());
+      setMessage(customer ? "Perubahan pelanggan tersimpan." : "Pelanggan berhasil ditambahkan.");
+      if (!customer) router.push(`/pelanggan/${result.data.id}`);
+      else router.refresh();
+    } catch {
+      setMessage("Koneksi terputus. Data pelanggan belum tersimpan dan input Anda dipertahankan. Coba lagi.");
+    } finally {
+      setPending(false);
+    }
+  }
+  async function archive() {
+    if (!customer || pending || !window.confirm(`Nonaktifkan ${customer.name}? Pelanggan tetap ada di histori transaksi.`)) return;
+    setPending(true);
+    try {
+      const result = await archiveCustomerAction({ id: customer.id, idempotencyKey: key });
+      if (!result.ok) { setMessage(result.error.message); return; }
+      setKey(freshKey());
+      setMessage("Pelanggan dinonaktifkan dan tidak lagi tersedia untuk transaksi baru.");
+      router.refresh();
+    } catch {
+      setMessage("Koneksi terputus. Pelanggan belum dinonaktifkan. Coba lagi.");
+    } finally {
+      setPending(false);
+    }
+  }
   return <form className="form-panel" onSubmit={submit} noValidate><Field label="Nama pelanggan" name="name" required value={fields.name} error={errors.name?.[0]} onChange={set}/><Field label="Nomor WhatsApp" name="whatsapp" inputMode="tel" value={fields.whatsapp} error={errors.whatsapp?.[0]} onChange={set}/><Field label="Alamat" name="address" multiline value={fields.address} error={errors.address?.[0]} onChange={set}/><Field label="Catatan" name="notes" multiline value={fields.notes} error={errors.notes?.[0]} onChange={set}/>{message && <p className={message.includes("tersimpan") || message.includes("berhasil") || message.includes("dinonaktifkan") ? "notice success" : "notice error"} role="status">{message}</p>}<div className="form-actions"><button type="submit" disabled={pending || customer?.isActive === false}>{pending ? "Menyimpan..." : customer ? "Simpan perubahan" : "Tambah pelanggan"}</button>{customer?.isActive && <button className="button-danger" type="button" disabled={pending} onClick={archive}>Nonaktifkan pelanggan</button>}</div></form>;
 }
 function Field({ label, name, value, error, onChange, multiline, ...props }: { label: string; name: keyof Fields; value: string; error?: string; onChange: (name: keyof Fields, value: string) => void; multiline?: boolean; required?: boolean; inputMode?: "tel" }) { const id = `customer-${name}`; const common = { id, name, value, "aria-invalid": Boolean(error), "aria-describedby": error ? `${id}-error` : undefined, onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onChange(name, event.target.value) }; return <label className="field" htmlFor={id}><span>{label}{props.required && " *"}</span>{multiline ? <textarea {...common}/> : <input {...common} {...props}/>} {error && <small id={`${id}-error`} className="field-error">{error}</small>}</label>; }

@@ -31,15 +31,20 @@ export function PaymentForm({ saleId, remainingRupiah }: { saleId: string; remai
       : amountRupiah > remainingRupiah ? "Nominal pembayaran melebihi sisa piutang." : null;
     if (localError) { setErrors({ amountRupiah: [localError] }); return; }
     setPending(true);
-    const result = await createPaymentAction({ saleId, amountRupiah, method, paidAt, notes: notes || undefined, idempotencyKey: key });
-    setPending(false);
-    if (!result.ok) {
-      setMessage(result.error.message); setErrors(result.error.fields ?? {});
-      if (result.error.code === "unauthorized") router.push(`/login?next=/penjualan/${saleId}`);
-      return;
+    try {
+      const result = await createPaymentAction({ saleId, amountRupiah, method, paidAt, notes: notes || undefined, idempotencyKey: key });
+      if (!result.ok) {
+        setMessage(result.error.message); setErrors(result.error.fields ?? {});
+        if (result.error.code === "unauthorized") router.push(`/login?next=/penjualan/${saleId}`);
+        return;
+      }
+      setKey(crypto.randomUUID()); setAmount(""); setNotes(""); setSuccess(`Pembayaran ${rupiah(result.data.amountRupiah)} tersimpan.`);
+      router.refresh();
+    } catch {
+      setMessage("Koneksi terputus. Pembayaran belum tersimpan dan input Anda dipertahankan. Coba lagi.");
+    } finally {
+      setPending(false);
     }
-    setKey(crypto.randomUUID()); setAmount(""); setNotes(""); setSuccess(`Pembayaran ${rupiah(result.data.amountRupiah)} tersimpan.`);
-    router.refresh();
   }
 
   return (

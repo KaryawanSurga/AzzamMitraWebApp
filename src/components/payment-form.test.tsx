@@ -53,4 +53,18 @@ describe("PaymentForm", () => {
     expect(screen.getByText("Invoice ini sudah lunas.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Catat pembayaran" })).not.toBeInTheDocument();
   });
+
+  it("UAT-12: koneksi putus menjaga nominal dan mengizinkan retry", async () => {
+    createPaymentAction.mockRejectedValueOnce(new Error("offline"));
+    createPaymentAction.mockResolvedValueOnce({ ok: true, data: { id: "payment-1", amountRupiah: 200_000 } });
+    render(<PaymentForm saleId={saleId} remainingRupiah={500_000}/>);
+    fireEvent.change(amount(), { target: { value: "200000" } });
+    fireEvent.click(screen.getByRole("button", { name: "Catat pembayaran" }));
+    await screen.findByText(/Koneksi terputus/);
+    expect(amount().value).toBe("200000");
+    fireEvent.click(screen.getByRole("button", { name: "Catat pembayaran" }));
+    await waitFor(() => expect(refresh).toHaveBeenCalled());
+    expect(createPaymentAction).toHaveBeenCalledTimes(2);
+    expect(createPaymentAction.mock.calls[1][0].idempotencyKey).toBe(createPaymentAction.mock.calls[0][0].idempotencyKey);
+  });
 });

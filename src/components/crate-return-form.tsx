@@ -36,16 +36,21 @@ export function CrateReturnForm({ accounts, fixedCustomerId }: { accounts: Crate
       : numeric * 1000 > balanceMilli ? `Pengembalian melebihi saldo peti pelanggan (${formatCrate(balanceMilli)}).` : null;
     if (localError) { setErrors({ crateQuantity: [localError] }); return; }
     setPending(true);
-    const result = await recordCrateReturnAction({ customerId, crateQuantity: crateQuantity.replace(",", "."), occurredAt, notes: notes || undefined, idempotencyKey: key });
-    setPending(false);
-    if (!result.ok) {
-      setMessage(result.error.message); setErrors(result.error.fields ?? {});
-      if (result.error.code === "unauthorized") router.push("/login?next=/peti");
-      return;
+    try {
+      const result = await recordCrateReturnAction({ customerId, crateQuantity: crateQuantity.replace(",", "."), occurredAt, notes: notes || undefined, idempotencyKey: key });
+      if (!result.ok) {
+        setMessage(result.error.message); setErrors(result.error.fields ?? {});
+        if (result.error.code === "unauthorized") router.push("/login?next=/peti");
+        return;
+      }
+      setKey(crypto.randomUUID()); setQuantity(""); setNotes("");
+      setSuccess(`Peti kembali ${formatCrate(result.data.crateQuantityMilli)} dari ${selected?.customerName ?? "pelanggan"} tersimpan.`);
+      router.refresh();
+    } catch {
+      setMessage("Koneksi terputus. Pengembalian peti belum tersimpan dan input Anda dipertahankan. Coba lagi.");
+    } finally {
+      setPending(false);
     }
-    setKey(crypto.randomUUID()); setQuantity(""); setNotes("");
-    setSuccess(`Peti kembali ${formatCrate(result.data.crateQuantityMilli)} dari ${selected?.customerName ?? "pelanggan"} tersimpan.`);
-    router.refresh();
   }
 
   return (

@@ -40,15 +40,20 @@ function DeliveryCreateForm({ saleId, remainingMilli }: { saleId: string; remain
     setMessage(""); setErrors({});
     const crateQuantity = quantity.trim() === "" ? String(remainingMilli / 1000) : quantity.trim();
     setPending(true);
-    const result = await createDeliveryAction({ saleId, crateQuantity, dispatchedAt, idempotencyKey: key });
-    setPending(false);
-    if (!result.ok) {
-      setMessage(result.error.message); setErrors(result.error.fields ?? {});
-      if (result.error.code === "unauthorized") router.push(`/login?next=/penjualan/${saleId}`);
-      return;
+    try {
+      const result = await createDeliveryAction({ saleId, crateQuantity, dispatchedAt, idempotencyKey: key });
+      if (!result.ok) {
+        setMessage(result.error.message); setErrors(result.error.fields ?? {});
+        if (result.error.code === "unauthorized") router.push(`/login?next=/penjualan/${saleId}`);
+        return;
+      }
+      setKey(crypto.randomUUID()); setQuantity("");
+      router.refresh();
+    } catch {
+      setMessage("Koneksi terputus. Rencana pengiriman belum tersimpan dan input Anda dipertahankan. Coba lagi.");
+    } finally {
+      setPending(false);
     }
-    setKey(crypto.randomUUID()); setQuantity("");
-    router.refresh();
   }
 
   return (

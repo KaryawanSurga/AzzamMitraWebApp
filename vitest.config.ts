@@ -13,5 +13,8 @@ export default defineConfig({
     globals: true,
     include: ["src/**/*.test.{ts,tsx}"],
     setupFiles: ["./src/test/setup.ts"],
+    /* PGlite menerapkan seluruh migration di beforeEach; timeout default 10 detik mudah tercapai saat worker paralel. */
+    hookTimeout: 30_000,
+    testTimeout: 15_000,
   },
 });
