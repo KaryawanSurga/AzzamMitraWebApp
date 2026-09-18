@@ -105,3 +105,5 @@ Fase 6 menyediakan koreksi immutable: invoice terkonfirmasi dapat dikoreksi atau
 - [Technical specification](./docs/03-TECHNICAL-SPEC.md)
 - [UAT](./docs/04-UAT.md)
 - [Roadmap implementasi](./docs/05-IMPLEMENTATION-ROADMAP.md)
+- [Operasional, backup, dan rilis](./docs/06-OPERATIONS.md)
+- [Panduan deployment cloud](./docs/07-DEPLOYMENT.md)
