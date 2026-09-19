@@ -65,5 +65,5 @@ describe("F4 migration upgrade path", () => {
       insert into capital_movements (movement_number, type, amount_rupiah, occurred_at, idempotency_key)
       values ('CAP-DUP', 'capital_in', 1, '2026-01-03T00:00:00Z', '${capitalKeys[0]}')
     `)).rejects.toThrow(/unique constraint/i);
-  }, 15_000);
+  });
 });
