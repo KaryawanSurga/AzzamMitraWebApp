@@ -11,6 +11,7 @@ Webapp adalah buku operasional internal distributor telur untuk satu owner yang 
 5. [Roadmap implementasi](./05-IMPLEMENTATION-ROADMAP.md)
 6. [Operasional, backup, dan rilis](./06-OPERATIONS.md)
 7. [Panduan deployment cloud](./07-DEPLOYMENT.md)
+8. [Panduan owner (untuk client)](./08-PANDUAN-OWNER.md)
 
 ## Keputusan baseline
 
