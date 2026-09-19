@@ -70,6 +70,23 @@ export type CashflowPoint = {
   date: string;
   incomeRupiah: number;
   expenseRupiah: number;
+  salesRupiah: number;
+};
+
+export type PercentChange = number | null;
+
+export type DashboardComparison = {
+  incomePercent: PercentChange;
+  expensePercent: PercentChange;
+  netCashflowPercent: PercentChange;
+  salesPercent: PercentChange;
+  profitPercent: PercentChange;
+};
+
+export type ExpenseBreakdownItem = {
+  category: ExpenseCategory;
+  amountRupiah: number;
+  share: number;
 };
 
 export type DashboardAction = {
@@ -95,6 +112,8 @@ export type DashboardOverview = DashboardCashflow & {
   totalSalesRupiah: number;
   totalReceivablesRupiah: number;
   estimatedNetProfitRupiah: number;
+  comparison: DashboardComparison;
+  expenseBreakdown: ExpenseBreakdownItem[];
   actions: DashboardAction[];
   actionCounts: Record<DashboardAction["kind"], number>;
 };
@@ -144,6 +163,7 @@ function dateRange(from: string, to: string) {
 
 export function aggregateDashboardCashflow(
   days: DashboardPeriodDays,
+  salesEvents: CashflowEvent[],
   incomeEvents: CashflowEvent[],
   expenseEvents: CashflowEvent[],
   now = new Date(),
@@ -154,9 +174,14 @@ export function aggregateDashboardCashflow(
 
   for (let index = 0; index < days; index += 1) {
     const date = jakartaDateTimeLocal(new Date(start + index * 86_400_000)).slice(0, 10);
-    points.set(date, { date, incomeRupiah: 0, expenseRupiah: 0 });
+    points.set(date, { date, incomeRupiah: 0, expenseRupiah: 0, salesRupiah: 0 });
   }
 
+  for (const event of salesEvents) {
+    const date = jakartaDateTimeLocal(new Date(event.occurredAt)).slice(0, 10);
+    const point = points.get(date);
+    if (point) point.salesRupiah += event.amountRupiah;
+  }
   for (const event of incomeEvents) {
     const date = jakartaDateTimeLocal(new Date(event.occurredAt)).slice(0, 10);
     const point = points.get(date);
@@ -180,6 +205,33 @@ export function aggregateDashboardCashflow(
     netCashflowRupiah: totalIncomeRupiah - totalExpenseRupiah,
     points: series,
   };
+}
+
+export function percentChange(current: number, previous: number): PercentChange {
+  if (previous === 0) return current === 0 ? 0 : null;
+  return ((current - previous) / previous) * 100;
+}
+
+export function buildDashboardComparison(
+  current: { incomeRupiah: number; expenseRupiah: number; salesRupiah: number },
+  previous: { incomeRupiah: number; expenseRupiah: number; salesRupiah: number },
+): DashboardComparison {
+  return {
+    incomePercent: percentChange(current.incomeRupiah, previous.incomeRupiah),
+    expensePercent: percentChange(current.expenseRupiah, previous.expenseRupiah),
+    netCashflowPercent: percentChange(current.incomeRupiah - current.expenseRupiah, previous.incomeRupiah - previous.expenseRupiah),
+    salesPercent: percentChange(current.salesRupiah, previous.salesRupiah),
+    profitPercent: percentChange(current.salesRupiah - current.expenseRupiah, previous.salesRupiah - previous.expenseRupiah),
+  };
+}
+
+export function buildExpenseBreakdown(expenses: ReportExpenseEvent[]): ExpenseBreakdownItem[] {
+  const totals = new Map<ExpenseCategory, number>();
+  for (const expense of expenses) totals.set(expense.category, (totals.get(expense.category) ?? 0) + expense.amountRupiah);
+  const total = [...totals.values()].reduce((sum, value) => sum + value, 0);
+  return [...totals.entries()]
+    .map(([category, amountRupiah]) => ({ category, amountRupiah, share: total === 0 ? 0 : amountRupiah / total }))
+    .sort((left, right) => right.amountRupiah - left.amountRupiah);
 }
 
 export function buildPeriodReport(

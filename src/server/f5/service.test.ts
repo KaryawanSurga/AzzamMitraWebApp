@@ -93,12 +93,17 @@ describe("F5Service", () => {
         netCashflowRupiah: 750_000,
         totalReceivablesRupiah: 500_000,
         estimatedNetProfitRupiah: 1_250_000,
+        comparison: { incomePercent: 0, expensePercent: 0, netCashflowPercent: 0, salesPercent: 0, profitPercent: 0 },
+        expenseBreakdown: [{ category: "egg_purchase", amountRupiah: 250_000, share: 1 }],
         actionCounts: { overdue: 1, due: 0, delivery: 1, crate: 0 },
       },
     });
-    expect(repository.ranges).toHaveLength(3);
+    expect(repository.ranges).toHaveLength(6);
     expect(repository.ranges[0]).toEqual(repository.ranges[1]);
     expect(repository.ranges[1]).toEqual(repository.ranges[2]);
+    expect(repository.ranges[3].to.getTime()).toBeLessThan(repository.ranges[0].from.getTime());
+    expect(repository.ranges[3]).toEqual(repository.ranges[4]);
+    expect(repository.ranges[4]).toEqual(repository.ranges[5]);
   });
 
   it("membangun laporan periode dan default bulan berjalan", async () => {

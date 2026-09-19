@@ -2,9 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   aggregateDashboardCashflow,
   buildDashboardActions,
+  buildDashboardComparison,
+  buildExpenseBreakdown,
   buildPeriodReport,
   dashboardDateRange,
   dashboardQuerySchema,
+  percentChange,
   periodReportCsv,
   reportDateRange,
   reportQuerySchema,
@@ -27,9 +30,10 @@ describe("dashboard reporting domain", () => {
     expect(range.toDate.toISOString()).toBe("2026-09-17T16:59:59.999Z");
   });
 
-  it("mengagregasi uang masuk dan pengeluaran per hari tanpa modal", () => {
+  it("mengagregasi penjualan, uang masuk, dan pengeluaran per hari tanpa modal", () => {
     const result = aggregateDashboardCashflow(
       7,
+      [{ amountRupiah: 1_500_000, occurredAt: "2026-09-16T01:00:00.000Z" }],
       [
         { amountRupiah: 400_000, occurredAt: "2026-09-16T02:00:00.000Z" },
         { amountRupiah: 600_000, occurredAt: "2026-09-16T08:00:00.000Z" },
@@ -45,10 +49,37 @@ describe("dashboard reporting domain", () => {
     expect(result.points.find(({ date }) => date === "2026-09-16")).toMatchObject({
       incomeRupiah: 1_000_000,
       expenseRupiah: 150_000,
+      salesRupiah: 1_500_000,
     });
     expect(result.totalIncomeRupiah).toBe(1_000_000);
     expect(result.totalExpenseRupiah).toBe(250_000);
     expect(result.netCashflowRupiah).toBe(750_000);
+  });
+
+  it("menghitung persentase perubahan periode sebelumnya", () => {
+    expect(percentChange(150, 100)).toBeCloseTo(50);
+    expect(percentChange(50, 100)).toBeCloseTo(-50);
+    expect(percentChange(0, 0)).toBe(0);
+    expect(percentChange(100, 0)).toBeNull();
+
+    const comparison = buildDashboardComparison(
+      { incomeRupiah: 1_500_000, expenseRupiah: 500_000, salesRupiah: 2_000_000 },
+      { incomeRupiah: 1_000_000, expenseRupiah: 400_000, salesRupiah: 1_600_000 },
+    );
+    expect(comparison).toMatchObject({ incomePercent: 50, expensePercent: 25, salesPercent: 25, profitPercent: 25 });
+    expect(comparison.netCashflowPercent).toBeCloseTo(66.67);
+  });
+
+  it("menyusun rincian pengeluaran per kategori berurut nominal", () => {
+    const breakdown = buildExpenseBreakdown([
+      { reference: "EXP-1", category: "egg_purchase", notes: null, amountRupiah: 600_000, occurredAt: "2026-09-16T04:00:00Z" },
+      { reference: "EXP-2", category: "delivery", notes: null, amountRupiah: 150_000, occurredAt: "2026-09-16T05:00:00Z" },
+      { reference: "EXP-3", category: "egg_purchase", notes: null, amountRupiah: 250_000, occurredAt: "2026-09-17T05:00:00Z" },
+    ]);
+    expect(breakdown).toEqual([
+      { category: "egg_purchase", amountRupiah: 850_000, share: 0.85 },
+      { category: "delivery", amountRupiah: 150_000, share: 0.15 },
+    ]);
   });
 });
 

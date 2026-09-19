@@ -2,6 +2,8 @@ import "server-only";
 import {
   aggregateDashboardCashflow,
   buildDashboardActions,
+  buildDashboardComparison,
+  buildExpenseBreakdown,
   buildPeriodReport,
   dashboardDateRange,
   dashboardQuerySchema,
@@ -27,18 +29,23 @@ export class F5Service {
 
     const current = this.now();
     const range = dashboardDateRange(parsed.data.days, current);
+    const previousRange = dashboardDateRange(parsed.data.days, new Date(current.getTime() - parsed.data.days * 86_400_000));
     try {
-      const [sales, payments, expenses, receivables, undelivered, crates] = await Promise.all([
+      const [sales, payments, expenses, receivables, undelivered, crates, previousSales, previousPayments, previousExpenses] = await Promise.all([
         this.repository.listSales(range.fromDate, range.toDate),
         this.repository.listPayments(range.fromDate, range.toDate),
         this.repository.listExpenses(range.fromDate, range.toDate),
         this.repository.listReceivables(range.toDate),
         this.repository.listUndelivered(),
         this.repository.listCrateOutstanding(),
+        this.repository.listSales(previousRange.fromDate, previousRange.toDate),
+        this.repository.listPayments(previousRange.fromDate, previousRange.toDate),
+        this.repository.listExpenses(previousRange.fromDate, previousRange.toDate),
       ]);
-      const cashflow = aggregateDashboardCashflow(parsed.data.days, payments, expenses, current);
+      const cashflow = aggregateDashboardCashflow(parsed.data.days, sales, payments, expenses, current);
       const report = buildPeriodReport(range, sales, payments, expenses, receivables);
       const actionSummary = buildDashboardActions(receivables, undelivered, crates, range.to);
+      const sum = (events: Array<{ amountRupiah: number }>) => events.reduce((total, event) => total + event.amountRupiah, 0);
       return {
         ok: true,
         data: {
@@ -46,6 +53,11 @@ export class F5Service {
           totalSalesRupiah: report.totalSalesRupiah,
           totalReceivablesRupiah: report.totalReceivablesRupiah,
           estimatedNetProfitRupiah: report.estimatedNetProfitRupiah,
+          comparison: buildDashboardComparison(
+            { incomeRupiah: report.totalIncomeRupiah, expenseRupiah: report.totalExpenseRupiah, salesRupiah: report.totalSalesRupiah },
+            { incomeRupiah: sum(previousPayments), expenseRupiah: sum(previousExpenses), salesRupiah: sum(previousSales) },
+          ),
+          expenseBreakdown: buildExpenseBreakdown(expenses),
           actions: actionSummary.actions.slice(0, 8),
           actionCounts: actionSummary.actionCounts,
         },
