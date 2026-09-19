@@ -422,6 +422,8 @@ a { color: inherit; }
   .receipt-sheet { break-inside: avoid; }
 }
 
+.pwa-install { width: 100%; margin-top: 1rem; }
+.pwa-hint { margin: 1rem 0 0; color: var(--am-text-quiet); font-size: .82rem; line-height: 1.5; }
 .status-cancelled { background: var(--am-status-terlambat-bg); color: var(--am-status-terlambat-fg); }
 .correction-panel { display: grid; gap: 1rem; margin-top: 1.5rem; border: 1px solid var(--am-line); border-radius: var(--am-radius-kartu); padding: clamp(1rem, 3vw, 1.5rem); background: var(--am-surface-raised); }
 .correction-panel > header { display: flex; align-items: end; justify-content: space-between; gap: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--am-line-soft); }
