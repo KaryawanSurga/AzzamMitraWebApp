@@ -69,7 +69,7 @@ Perintah Drizzle membaca `.env.local` melalui `node --env-file-if-exists`. Migra
 
 ## Struktur
 
-- `src/app` — Next.js App Router dan global styles.
+- `src/app` — Next.js App Router dan global styles. Halaman `/prototype` adalah contoh desain berisi data dummy tanpa autentikasi, bukan bagian alur produksi.
 - `src/components` — komponen UI bersama.
 - `src/config` — validasi environment public dan server.
 - `src/db` — koneksi PostgreSQL lazy dan entry point schema Drizzle.
