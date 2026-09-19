@@ -60,6 +60,8 @@ Menjalankan alur penjualan, koreksi, pembatalan, riwayat audit, dan pelaporan te
 ## Riwayat rilis
 
 - `v0.1.0` (2026-09-18): rilis pertama F0-F6. Workflow Release menjalankan lint, typecheck, test, dan build di runner lalu membuat GitHub Release otomatis. Validasi lokal: UAT-09/UAT-10, restore PostgreSQL, dan smoke test UI lulus.
+- Deployment produksi (2026-09-19): aplikasi live di `https://azzam-mitra-webapp.vercel.app` (Vercel, tim al-dev3) dengan database Supabase Cloud `thdzlietazriyexhnadd` (region Seoul). Migration 7/7 diterapkan, empat env produksi terpasang (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL` session pooler). Smoke test login + dashboard + PWA + manifest lulus; data uji dibersihkan dan hanya akun owner client yang tersisa.
+- Sisa sebelum produksi penuh: set URL auth Supabase ke domain produksi, konfigurasi SMTP untuk reset password mandiri, dan revoke token deploy sementara.
 
 ## Monitoring dan observability
 
