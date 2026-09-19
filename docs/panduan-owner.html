@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Panduan Owner — Azzam Mitra</title>
+<style>
+  :root { --hijau: #24462c; --hijau-dalam: #193722; --krem: #f6f4ee; --amber: #d89b35; --ink: #1b211a; --quiet: #596259; --line: #d2d8d1; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #e9ebe6; color: var(--ink); font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif; line-height: 1.6; }
+  .sheet { width: 210mm; min-height: 297mm; margin: 12mm auto; padding: 18mm 16mm; background: #fff; box-shadow: 0 8px 30px rgb(25 55 34 / 0.12); }
+  header { display: flex; align-items: center; gap: 12px; border-bottom: 3px solid var(--hijau); padding-bottom: 14px; }
+  header svg { flex: none; }
+  header .brand strong { display: block; font-family: Constantia, Georgia, serif; letter-spacing: .06em; font-size: 18px; }
+  header .brand span { color: var(--quiet); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; }
+  h1 { margin: 22px 0 4px; font-size: 26px; letter-spacing: -.02em; }
+  .lead { margin: 0 0 14px; color: var(--quiet); }
+  .url { display: inline-block; border: 1px solid var(--line); border-radius: 999px; padding: 8px 16px; background: var(--krem); font-weight: 700; font-size: 14px; }
+  h2 { margin: 26px 0 8px; font-size: 17px; border-left: 5px solid var(--amber); padding-left: 10px; }
+  h3 { margin: 18px 0 6px; font-size: 14px; color: var(--hijau); }
+  ol, ul { margin: 6px 0 0; padding-left: 22px; }
+  li { margin: 4px 0; }
+  p { margin: 6px 0; }
+  .note { border: 1px solid var(--line); border-left: 5px solid var(--hijau); border-radius: 8px; padding: 10px 14px; background: var(--krem); font-size: 13px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .card { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  .card strong { display: block; margin-bottom: 2px; }
+  .card small { color: var(--quiet); }
+  footer { margin-top: 26px; border-top: 2px solid var(--hijau); padding-top: 10px; color: var(--quiet); font-size: 12px; display: flex; justify-content: space-between; gap: 12px; }
+  @page { size: A4; margin: 0; }
+  @media print {
+    body { background: #fff; }
+    .sheet { width: auto; min-height: 0; margin: 0; padding: 14mm 13mm; box-shadow: none; }
+    h2 { break-after: avoid; }
+  }
+</style>
+</head>
+<body>
+<main class="sheet">
+  <header>
+    <svg viewBox="0 0 120 120" width="44" height="44" aria-hidden="true">
+      <g fill="none" stroke="#24462C" stroke-width="13" stroke-linecap="butt" stroke-linejoin="round">
+        <path d="M22 101 60 33 98 101"/><path d="M41 79H79" stroke-width="11"/>
+      </g>
+      <path d="M60 46.5C66.82 48.66 71 64.05 71 62.16C71 69.72 66.6 73.5 60 73.5C53.4 73.5 49 69.72 49 62.16C49 64.05 53.18 48.66 60 46.5Z" fill="#D89B35"/>
+    </svg>
+    <span class="brand"><strong>AZZAM MITRA</strong><span>Distributor Telur</span></span>
+  </header>
+
+  <h1>Panduan Owner</h1>
+  <p class="lead">Panduan singkat pemakaian harian. Aplikasi berjalan di browser HP/laptop dan dapat dipasang seperti aplikasi biasa.</p>
+  <p><span class="url">https://azzam-mitra-webapp.vercel.app</span></p>
+
+  <h2>1. Masuk dan pasang di HP</h2>
+  <ol>
+    <li>Buka alamat aplikasi di atas (ketik di Chrome/Safari HP).</li>
+    <li>Masukkan email dan kata sandi owner Anda (diberikan admin).</li>
+    <li><strong>Android (Chrome):</strong> tekan tombol <strong>Install aplikasi di HP</strong> di halaman login, atau menu Chrome (titik tiga) → <strong>Install app</strong>.</li>
+    <li><strong>iPhone (Safari):</strong> tekan tombol <strong>Bagikan</strong> → <strong>Tambahkan ke Layar Utama</strong>.</li>
+    <li>Ikon Azzam Mitra muncul di layar utama; aplikasi terbuka penuh tanpa alamat web.</li>
+  </ol>
+  <p class="note">Lupa kata sandi? Hubungi admin untuk pengaturan ulang.</p>
+
+  <h2>2. Alur harian</h2>
+
+  <h3>Catat penjualan</h3>
+  <ol>
+    <li>Tekan <strong>Catat penjualan</strong>.</li>
+    <li>Pilih pelanggan (atau <strong>Tambah pelanggan baru</strong>).</li>
+    <li>Isi jumlah peti dan/atau berat aktual, lalu pilih dasar harga: <strong>per peti</strong> atau <strong>per kg</strong>.</li>
+    <li>Isi harga, diskon/biaya bila ada.</li>
+    <li>Pilih pembayaran: <strong>Lunas</strong>, <strong>DP</strong>, atau <strong>Utang</strong>; isi jatuh tempo untuk DP/utang.</li>
+    <li>Periksa total, lalu <strong>Simpan penjualan</strong>. Struk bisa dibuka dari halaman invoice.</li>
+  </ol>
+
+  <h3>Catat pembayaran</h3>
+  <ol>
+    <li>Buka invoice dari menu <strong>Penjualan</strong>.</li>
+    <li>Isi nominal, tanggal, dan metode (tunai/transfer).</li>
+    <li>Status dan sisa piutang dihitung otomatis.</li>
+  </ol>
+
+  <h3>Pengiriman dan peti</h3>
+  <ul>
+    <li>Di halaman invoice, catat <strong>pengiriman</strong> (boleh sebagian) dan penerimaan barang.</li>
+    <li>Peti yang dibawa pelanggan tercatat otomatis saat penjualan dikonfirmasi.</li>
+    <li>Catat <strong>peti kembali</strong> dari menu <strong>Peti</strong>. Sistem menolak pengembalian melebihi saldo.</li>
+  </ul>
+
+  <h3>Catat biaya</h3>
+  <div class="grid">
+    <div class="card"><strong>Pengeluaran</strong><small>Menu Pengeluaran → Catat pengeluaran: pembelian telur, BBM, upah, dan biaya lain.</small></div>
+    <div class="card"><strong>Modal &amp; prive</strong><small>Menu Pengaturan. Tidak dihitung sebagai pendapatan atau biaya usaha.</small></div>
+  </div>
+
+  <h2>3. Laporan dan struk</h2>
+  <ul>
+    <li>Menu <strong>Laporan</strong>: omzet, uang masuk, pengeluaran, arus kas, piutang, dan estimasi laba bersih.</li>
+    <li>Pilih periode, lalu <strong>Unduh CSV</strong> bila perlu diolah di Excel.</li>
+    <li><strong>Struk</strong> tersedia ukuran A4 dan thermal 80 mm; gunakan <strong>Cetak / simpan PDF</strong> dari browser.</li>
+  </ul>
+
+  <h2>4. Koreksi dan pembatalan</h2>
+  <ul>
+    <li>Invoice yang sudah dikonfirmasi <strong>tidak dapat dihapus</strong>.</li>
+    <li>Gunakan <strong>Koreksi invoice</strong> untuk memperbaiki diskon, biaya, jatuh tempo, atau catatan.</li>
+    <li>Gunakan <strong>Batalkan invoice</strong> bila transaksi batal; alasan wajib diisi dan nomor invoice tidak dipakai ulang.</li>
+    <li>Semua perubahan tersimpan di riwayat audit (siapa, kapan, nilai sebelum/sesudah).</li>
+  </ul>
+
+  <h2>5. Tips</h2>
+  <ul>
+    <li>Form penjualan menyimpan <strong>draft otomatis</strong>; jika koneksi terputus, isian tetap ada dan aman diulang.</li>
+    <li>Tanggal transaksi boleh mundur maksimal <strong>satu tahun</strong>.</li>
+    <li>Pelanggan yang tidak aktif dapat <strong>dinonaktifkan</strong> tanpa menghapus riwayat.</li>
+    <li>Gunakan satu akun owner; jangan bagikan kata sandi ke orang lain.</li>
+  </ul>
+
+  <h2>6. Jika ada kendala</h2>
+  <ul>
+    <li><strong>Sesi berakhir:</strong> masuk kembali; isian form tidak hilang.</li>
+    <li><strong>Tidak bisa menyimpan:</strong> periksa koneksi internet lalu coba lagi — tombol simpan tidak akan membuat data ganda.</li>
+    <li>Catat pesan error yang muncul dan hubungi admin.</li>
+  </ul>
+
+  <footer>
+    <span>Azzam Mitra — Panduan Owner</span>
+    <span>Admin: ____________________</span>
+  </footer>
+</main>
+</body>
+</html>

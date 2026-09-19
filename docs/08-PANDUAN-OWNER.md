@@ -2,15 +2,17 @@
 
 Panduan singkat untuk pemakaian harian. Aplikasi berjalan di browser HP/laptop dan dapat dipasang seperti aplikasi biasa.
 
+**Alamat aplikasi: https://azzam-mitra-webapp.vercel.app**
+
 ## 1. Masuk dan pasang di HP
 
-1. Buka alamat aplikasi yang diberikan admin.
-2. Masukkan email dan kata sandi owner Anda.
-3. **Android (Chrome):** setelah login, tekan tombol **Install aplikasi di HP** di halaman login, atau menu Chrome → **Install app**.
+1. Buka alamat aplikasi di atas (ketik di Chrome/Safari HP).
+2. Masukkan email dan kata sandi owner Anda (diberikan admin).
+3. **Android (Chrome):** tekan tombol **Install aplikasi di HP** di halaman login, atau menu Chrome (titik tiga) → **Install app**.
 4. **iPhone (Safari):** tekan tombol **Bagikan** → **Tambahkan ke Layar Utama**.
 5. Ikon Azzam Mitra akan muncul di layar utama dan aplikasi terbuka penuh tanpa alamat web.
 
-Lupa kata sandi? Gunakan tautan **Lupa kata sandi** di halaman masuk, lalu cek email.
+Lupa kata sandi? Hubungi admin untuk pengaturan ulang.
 
 ## 2. Alur harian
 
