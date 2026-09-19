@@ -56,7 +56,19 @@ Identity tanpa baris `public.users` ditolak dari area internal.
 3. Deploy. Build tidak menyentuh database saat kompilasi.
 4. Tambahkan domain produksi ke Supabase URL Configuration bila memakai domain kustom.
 
-## 5. Smoke test setelah deploy
+## 5. PWA: install ke HP
+
+Aplikasi sudah PWA-ready: manifest, ikon (termasuk maskable), service worker, dan fallback offline tersedia otomatis di deployment HTTPS.
+
+- **Android (Chrome):** buka URL produksi → login owner → tombol **Install aplikasi di HP** muncul di halaman login, atau menu Chrome → **Install app / Tambahkan ke Layar Utama**.
+- **iPhone (Safari):** buka URL → menu **Bagikan** → **Tambahkan ke Layar Utama** (Safari tidak menyediakan prompt otomatis; halaman login menampilkan petunjuk ini).
+- Setelah terinstall, app tampil fullscreen tanpa address bar dan muncul ikon Azzam Mitra.
+- Update otomatis mengikuti deployment terbaru; tidak ada proses update manual.
+- Menghapus: tahan ikon → hapus/lepaskan. Tidak menghapus data apa pun di server.
+
+Verifikasi di Chrome DevTools: **Application → Manifest** tanpa error dan **Service Workers** aktif. Audit cepat: `npx lighthouse <url> --only-categories=pwa --view` (opsional).
+
+## 6. Smoke test setelah deploy
 
 1. Login owner dan reset password.
 2. Catat penjualan lunas, lalu penjualan DP/utang.
@@ -67,14 +79,14 @@ Identity tanpa baris `public.users` ditolak dari area internal.
 7. Catat pengeluaran dan modal/prive; pastikan tidak masuk metrik operasional.
 8. Coba login salah 6 kali; pastikan pesan rate limit muncul.
 
-## 6. Backup dan monitoring
+## 7. Backup dan monitoring
 
 - Aktifkan backup harian/PITR pada paket Supabase yang dipakai.
 - Uji restore berkala ke project staging: `npm run db:backup`/`db:restore` atau menu Supabase.
 - Log terstruktur sudah aktif; hubungkan Sentry saat DSN tersedia dengan menambahkan pengiriman di `src/server/observability.ts`.
 - Pantau error rate dan latensi di dashboard Vercel.
 
-## 7. Rollback
+## 8. Rollback
 
 - Aplikasi: promote deployment Vercel sebelumnya.
 - Database: migration bersifat maju; jangan rollback schema. Pulihkan dari backup/PITR bila terjadi kerusakan data.
@@ -86,6 +98,7 @@ Identity tanpa baris `public.users` ditolak dari area internal.
 - [ ] Owner pertama punya baris `public.users`.
 - [ ] Empat environment variable terpasang di Vercel.
 - [ ] Redirect URL auth mengarah ke domain produksi.
-- [ ] Smoke test langkah 5 lulus.
+- [ ] Smoke test langkah 6 lulus.
+- [ ] PWA terpasang di HP owner (Android/iOS) dan ikon tampil benar.
 - [ ] Backup/PITR aktif dan satu restore drill berhasil.
 - [ ] Tidak ada finding keamanan critical/high.

@@ -63,6 +63,7 @@ When koneksi putus saat form terisi, then input tetap ada, kegagalan jelas, retr
 - Label, format IDR/kg, validasi, loading, error, empty, dan session-expired jelas.
 - Badge transaksi, pembayaran, dan pengiriman tidak digabung.
 - Print terbaca pada A4 dan thermal generik.
+- Aplikasi dapat di-install ke layar utama (Android prompt otomatis, iPhone lewat Bagikan → Tambahkan ke Layar Utama) dan berjalan fullscreen.
 
 ## Exit criteria
 
